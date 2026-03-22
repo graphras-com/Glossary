@@ -1,0 +1,1752 @@
+{
+  "version": 1,
+  "categories": [
+    {
+      "id": "commercial",
+      "parent_id": null,
+      "label": "Commercial"
+    },
+    {
+      "id": "commercial.governance",
+      "parent_id": "commercial",
+      "label": "Governance"
+    },
+    {
+      "id": "commercial.wholesale",
+      "parent_id": "commercial",
+      "label": "Wholesale"
+    },
+    {
+      "id": "commercial.retail",
+      "parent_id": "commercial",
+      "label": "Retail"
+    },
+    {
+      "id": "network",
+      "parent_id": null,
+      "label": "Network"
+    },
+    {
+      "id": "network.governance",
+      "parent_id": "network",
+      "label": "Governance"
+    },
+    {
+      "id": "network.mobile",
+      "parent_id": "network",
+      "label": "Mobile"
+    },
+    {
+      "id": "network.services",
+      "parent_id": "network",
+      "label": "Services"
+    },
+    {
+      "id": "network.access",
+      "parent_id": "network",
+      "label": "Access"
+    },
+    {
+      "id": "transmission",
+      "parent_id": null,
+      "label": "Transmission"
+    },
+    {
+      "id": "transmission.submarine_cable",
+      "parent_id": "transmission",
+      "label": "Submarine Cable"
+    },
+    {
+      "id": "transmission.fiber",
+      "parent_id": "transmission",
+      "label": "Fiber"
+    },
+    {
+      "id": "transmission.satellite",
+      "parent_id": "transmission",
+      "label": "Satellite"
+    },
+    {
+      "id": "transmission.microwave",
+      "parent_id": "transmission",
+      "label": "Microwave"
+    },
+    {
+      "id": "operations",
+      "parent_id": null,
+      "label": "Operations"
+    },
+    {
+      "id": "integration",
+      "parent_id": null,
+      "label": "Integration"
+    },
+    {
+      "id": "network.protocols",
+      "parent_id": "network",
+      "label": "Protocols"
+    },
+    {
+      "id": "commercial.finance",
+      "parent_id": "commercial",
+      "label": "Finance"
+    }
+  ],
+  "terms": [
+    {
+      "term": "Subscriber",
+      "definitions": [
+        {
+          "en": "An end user or business user for whom a telecommunications subscription is activated and managed.",
+          "da": "En slutbruger eller erhvervsbruger, for hvem et teleabonnement er aktiveret og administreret.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "Subscription",
+      "definitions": [
+        {
+          "en": "The active commercial relationship that entitles a customer or subscriber to receive a specific product or service under defined terms.",
+          "da": "Det aktive kommercielle forhold, der giver en kunde eller abonnent ret til at modtage et specifikt produkt eller en specifik tjeneste på definerede vilkår.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "Service",
+      "definitions": [
+        {
+          "en": "A technical capability delivered to a customer and realized through one or more configured operational and network resources.",
+          "da": "En teknisk kapabilitet, der leveres til en kunde og realiseres gennem en eller flere konfigurerede drifts- og netværksressourcer.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Service Instance",
+      "definitions": [
+        {
+          "en": "A specific operational instantiation of a service assigned to a customer, subscription, or account and tracked in service management systems.",
+          "da": "En specifik operationel instansiering af en tjeneste, som er tildelt en kunde, et abonnement eller en konto og spores i service management-systemer.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Provisioning",
+      "definitions": [
+        {
+          "en": "The process of configuring systems, service platforms, and network resources so that a requested service becomes active and usable.",
+          "da": "Processen med at konfigurere systemer, serviceplatforme og netværksressourcer, så en anmodet tjeneste bliver aktiv og anvendelig.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Resource",
+      "definitions": [
+        {
+          "en": "A logical or physical asset required to deliver, support, or manage a telecommunications service, including network, platform, and identifier assets.",
+          "da": "Et logisk eller fysisk aktiv, der kræves for at levere, understøtte eller administrere en teletjeneste, herunder netværks-, platform- og identifikatoraktiver.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Incident",
+      "definitions": [
+        {
+          "en": "An unplanned event that disrupts or reduces the quality of a service and requires investigation or resolution.",
+          "da": "En uplanlagt hændelse, der forstyrrer eller reducerer kvaliteten af en tjeneste og kræver undersøgelse eller løsning.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "SIM Card",
+      "definitions": [
+        {
+          "en": "A subscriber identity module containing credentials and identifiers used to authenticate and authorize a subscriber on a mobile network.",
+          "da": "Et abonnentidentitetsmodul, der indeholder legitimationsoplysninger og identifikatorer, som bruges til at autentificere og autorisere en abonnent på et mobilnetværk.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "IMSI",
+      "definitions": [
+        {
+          "en": "The International Mobile Subscriber Identity that uniquely identifies a mobile subscription in network and service control systems.",
+          "da": "International Mobile Subscriber Identity, som entydigt identificerer et mobilabonnement i netværks- og tjenestekontrolsystemer.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "MSISDN",
+      "definitions": [
+        {
+          "en": "The subscriber number used to address and route calls and messages to a mobile or voice service.",
+          "da": "Det abonnentnummer, der bruges til at adressere og dirigere opkald og beskeder til en mobil- eller taletjeneste.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "Core Network",
+      "definitions": [
+        {
+          "en": "The central telecommunications network domain responsible for session control, routing, policy, authentication, and service enablement.",
+          "da": "Det centrale telekommunikationsnetværksdomæne, der er ansvarligt for sessionskontrol, routing, politikker, autentifikation og aktivering af tjenester.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "Backhaul",
+      "definitions": [
+        {
+          "en": "The transport connection that links an access node, radio site, or edge location to aggregation or core network infrastructure.",
+          "da": "Transportforbindelsen, der forbinder en adgangsnode, radiosite eller edge-lokation med aggregerings- eller kernenetværksinfrastruktur.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "Access Network",
+      "definitions": [
+        {
+          "en": "The part of the telecommunications network that connects customer premises or radio sites to the operator network.",
+          "da": "Den del af telekommunikationsnetværket, der forbinder kundelokationer eller radiosites med operatørnetværket.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "Access Node",
+      "definitions": [
+        {
+          "en": "A network node in the access layer used to terminate, aggregate, or manage subscriber access connections.",
+          "da": "En netværksnode i adgangslaget, der bruges til at terminere, aggregere eller administrere abonnenters adgangsforbindelser.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "Last Mile",
+      "definitions": [
+        {
+          "en": "The final network segment connecting the operator network to the customer location or end-user premises.",
+          "da": "Det sidste netværkssegment, der forbinder operatørnetværket med kundens lokation eller slutbrugerens adresse.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "Local Loop",
+      "definitions": [
+        {
+          "en": "The physical or logical access connection between the customer site and the nearest operator access point.",
+          "da": "Den fysiske eller logiske adgangsforbindelse mellem kundelokationen og det nærmeste operatøradgangspunkt.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "Long Haul",
+      "definitions": [
+        {
+          "en": "High-capacity transport infrastructure used to carry traffic across long geographic distances between major network locations.",
+          "da": "Højkapacitets transportinfrastruktur, der bruges til at føre trafik over lange geografiske afstande mellem større netværkslokationer.",
+          "category_id": "transmission"
+        },
+        {
+          "en": "A microwave transport solution category, such as the Ericsson Long Haul product line, used to provide high-capacity links over long distances—often in remote or difficult environments—where fiber deployment is impractical or cost-inefficient.",
+          "da": "En kategori af mikrobølgetransportløsninger, såsom Ericsson Long Haul-produktlinjen, der bruges til at levere højkapacitetsforbindelser over lange afstande — ofte i fjerntliggende eller vanskelige miljøer — hvor fiberudrulning er upraktisk eller omkostningsineffektiv.",
+          "category_id": "transmission.microwave"
+        }
+      ]
+    },
+    {
+      "term": "Aggregation",
+      "definitions": [
+        {
+          "en": "The function of collecting traffic from multiple access or edge connections into higher-capacity transport links.",
+          "da": "Funktionen med at samle trafik fra flere adgangs- eller edge-forbindelser i transportforbindelser med højere kapacitet.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "Transport Network",
+      "definitions": [
+        {
+          "en": "The network domain responsible for carrying traffic between access, aggregation, core, and service locations.",
+          "da": "Det netværksdomæne, der er ansvarligt for at transportere trafik mellem adgangs-, aggregerings-, kerne- og servicelokationer.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "Core Router",
+      "definitions": [
+        {
+          "en": "A high-capacity routing device in the core network responsible for forwarding traffic between major network domains or sites.",
+          "da": "En routing-enhed med høj kapacitet i kernenetværket, der er ansvarlig for at videresende trafik mellem større netværksdomæner eller lokationer.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "Edge Router",
+      "definitions": [
+        {
+          "en": "A router positioned at the boundary of an operator’s network, connecting access networks, customer networks, or external networks to the core infrastructure.",
+          "da": "En router placeret ved grænsen af en operatørs netværk, som forbinder adgangsnetværk, kundenetværk eller eksterne netværk med kerneinfrastrukturen.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "Optical Transport",
+      "definitions": [
+        {
+          "en": "The transmission of traffic over optical infrastructure using light-based transport technologies.",
+          "da": "Overførsel af trafik over optisk infrastruktur ved hjælp af lysbaserede transportteknologier.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "DWDM",
+      "definitions": [
+        {
+          "en": "Dense Wavelength Division Multiplexing, an optical transmission technology that carries multiple wavelengths over a single fiber pair.",
+          "da": "Dense Wavelength Division Multiplexing, en optisk transmissionsteknologi, der fører flere bølgelængder over ét fiberpar.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "CWDM",
+      "definitions": [
+        {
+          "en": "Coarse Wavelength Division Multiplexing, an optical transmission technology that carries multiple wavelengths over a single fiber with wider channel spacing.",
+          "da": "Coarse Wavelength Division Multiplexing, en optisk transmissionsteknologi, der fører flere bølgelængder over én fiber med større kanalafstand.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "Dark Fiber",
+      "definitions": [
+        {
+          "en": "Optical fiber infrastructure provided without active transmission equipment or managed optical service.",
+          "da": "Optisk fiberinfrastruktur leveret uden aktivt transmissionsudstyr eller administreret optisk tjeneste.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "Wavelength",
+      "definitions": [
+        {
+          "en": "A logical optical channel carried over fiber and identified by a specific light frequency or spectrum slot.",
+          "da": "En logisk optisk kanal, der føres over fiber og identificeres ved en specifik lysfrekvens eller spektralslot.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "Leased Line",
+      "definitions": [
+        {
+          "en": "A dedicated point-to-point connectivity service delivered with defined capacity and service characteristics.",
+          "da": "En dedikeret punkt-til-punkt-forbindelsestjeneste leveret med defineret kapacitet og serviceegenskaber.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "Ethernet Service",
+      "definitions": [
+        {
+          "en": "A data connectivity service delivered using Ethernet interfaces and Ethernet-based transport.",
+          "da": "En datakonnektivitetstjeneste leveret ved hjælp af Ethernet-grænseflader og Ethernet-baseret transport.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "MPLS",
+      "definitions": [
+        {
+          "en": "Multiprotocol Label Switching, a forwarding method used to carry traffic efficiently across a transport or core network using labels.",
+          "da": "Multiprotocol Label Switching, en videresendelsesmetode, der bruges til effektivt at transportere trafik gennem et transport- eller kernenetværk ved hjælp af labels.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "IP Transit",
+      "definitions": [
+        {
+          "en": "A service that provides upstream IP connectivity for reaching external networks and the public internet.",
+          "da": "En tjeneste, der leverer upstream IP-konnektivitet til at nå eksterne netværk og det offentlige internet.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "Peering",
+      "definitions": [
+        {
+          "en": "The exchange of traffic between two networks under agreed technical and commercial conditions without standard transit delivery.",
+          "da": "Udveksling af trafik mellem to netværk under aftalte tekniske og kommercielle betingelser uden standard transit-leverance.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "Cross Connect",
+      "definitions": [
+        {
+          "en": "A physical or logical connection linking two ports, fibers, circuits, or services within a network or facility.",
+          "da": "En fysisk eller logisk forbindelse, der forbinder to porte, fibre, kredsløb eller tjenester i et netværk eller en facilitet.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "Point of Presence",
+      "definitions": [
+        {
+          "en": "A network site where operator equipment is installed to provide transport, interconnection, aggregation, or service access.",
+          "da": "En netværkslokation, hvor operatørudstyr er installeret for at levere transport, interconnection, aggregering eller serviceadgang.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "UNI",
+      "definitions": [
+        {
+          "en": "User Network Interface, the service boundary interface between the operator network and the customer side.",
+          "da": "User Network Interface, servicegrænsefladen mellem operatørnetværket og kundesiden.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "NNI",
+      "definitions": [
+        {
+          "en": "Network to Network Interface, the interconnection boundary between two operator or service provider network domains.",
+          "da": "Network to Network Interface, interconnection-grænsen mellem to operatør- eller tjenesteudbydernetværksdomæner.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "BSS",
+      "definitions": [
+        {
+          "en": "Business Support Systems responsible for customer management, product management, billing, and revenue-related processes.",
+          "da": "Business Support Systems, der er ansvarlige for kundestyring, produktstyring, fakturering og indtægtsrelaterede processer.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "OSS",
+      "definitions": [
+        {
+          "en": "Operations Support Systems responsible for service provisioning, network management, and operational processes.",
+          "da": "Operations Support Systems, der er ansvarlige for serviceprovisionering, netværksstyring og driftsprocesser.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "CRM",
+      "definitions": [
+        {
+          "en": "Customer Relationship Management system used to manage customer data, interactions, and support processes.",
+          "da": "Customer Relationship Management-system, der bruges til at administrere kundedata, interaktioner og supportprocesser.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "Billing System",
+      "definitions": [
+        {
+          "en": "A system responsible for calculating charges, generating invoices, and managing customer billing data.",
+          "da": "Et system, der er ansvarligt for at beregne gebyrer, generere fakturaer og administrere kunders faktureringsdata.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "Charging System",
+      "definitions": [
+        {
+          "en": "A system responsible for applying real-time or batch charges based on usage or events.",
+          "da": "Et system, der er ansvarligt for at anvende realtids- eller batchbaserede opkrævninger baseret på forbrug eller hændelser.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "Rating Engine",
+      "definitions": [
+        {
+          "en": "The component that calculates the monetary value of usage records according to pricing rules.",
+          "da": "Den komponent, der beregner den monetære værdi af forbrugsregistreringer i henhold til prisregler.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "Mediation",
+      "definitions": [
+        {
+          "en": "The process of collecting, normalizing, and forwarding usage data from network elements to downstream systems.",
+          "da": "Processen med at indsamle, normalisere og videresende forbrugsdata fra netværkselementer til downstream-systemer.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Service Activation",
+      "definitions": [
+        {
+          "en": "The process of enabling a service so it becomes usable by the customer.",
+          "da": "Processen med at aktivere en tjeneste, så den bliver anvendelig for kunden.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Inventory System",
+      "definitions": [
+        {
+          "en": "A system that maintains records of network resources, services, and their relationships.",
+          "da": "Et system, der vedligeholder registreringer af netværksressourcer, tjenester og deres relationer.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Resource Inventory",
+      "definitions": [
+        {
+          "en": "A repository of network and infrastructure resources and their operational states.",
+          "da": "Et register over netværks- og infrastrukturressourcer og deres operationelle tilstande.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Fault Management",
+      "definitions": [
+        {
+          "en": "The processes and systems used to detect, isolate, and resolve network and service faults.",
+          "da": "De processer og systemer, der bruges til at opdage, isolere og afhjælpe netværks- og servicefejl.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "API",
+      "definitions": [
+        {
+          "en": "An Application Programming Interface that defines how systems interact and exchange data programmatically.",
+          "da": "Et Application Programming Interface, der definerer, hvordan systemer interagerer og udveksler data programmatisk.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "REST API",
+      "definitions": [
+        {
+          "en": "An API that follows REST principles using HTTP methods for resource-based interactions.",
+          "da": "Et API, der følger REST-principper og bruger HTTP-metoder til ressourcebaserede interaktioner.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Endpoint",
+      "definitions": [
+        {
+          "en": "A specific URL or interface where an API can be accessed by a client application.",
+          "da": "En specifik URL eller grænseflade, hvor et API kan tilgås af en klientapplikation.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Payload",
+      "definitions": [
+        {
+          "en": "The data content transmitted in an API request or response.",
+          "da": "Det dataindhold, der overføres i en API-anmodning eller et API-svar.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "JSON",
+      "definitions": [
+        {
+          "en": "A structured data format commonly used for data exchange in APIs.",
+          "da": "Et struktureret dataformat, der almindeligvis bruges til dataudveksling i API’er.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Authentication",
+      "definitions": [
+        {
+          "en": "The process of verifying the identity of a user or system before granting access.",
+          "da": "Processen med at verificere identiteten af en bruger eller et system, før adgang gives.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Authorization",
+      "definitions": [
+        {
+          "en": "The process of determining what an authenticated entity is allowed to access or perform.",
+          "da": "Processen med at afgøre, hvad en autentificeret enhed har adgang til eller må udføre.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Token",
+      "definitions": [
+        {
+          "en": "A credential used to represent authentication or authorization in API interactions.",
+          "da": "En legitimation, der bruges til at repræsentere autentifikation eller autorisation i API-interaktioner.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Microservices",
+      "definitions": [
+        {
+          "en": "An architectural style where applications are composed of small, independent, and loosely coupled services.",
+          "da": "En arkitektonisk stil, hvor applikationer er sammensat af små, uafhængige og løst koblede tjenester.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Container",
+      "definitions": [
+        {
+          "en": "A lightweight runtime environment that packages an application and its dependencies for consistent deployment.",
+          "da": "Et letvægts runtime-miljø, der pakker en applikation og dens afhængigheder til konsistent udrulning.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "CI/CD",
+      "definitions": [
+        {
+          "en": "Continuous Integration and Continuous Deployment processes used to automate software build, test, and release pipelines.",
+          "da": "Continuous Integration- og Continuous Deployment-processer, der bruges til at automatisere software-build-, test- og release-pipelines.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Pipeline",
+      "definitions": [
+        {
+          "en": "A sequence of automated steps used to build, test, and deploy software.",
+          "da": "En sekvens af automatiserede trin, der bruges til at bygge, teste og udrulle software.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Deployment",
+      "definitions": [
+        {
+          "en": "The process of releasing and installing software into a runtime environment.",
+          "da": "Processen med at frigive og installere software i et runtime-miljø.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Monitoring",
+      "definitions": [
+        {
+          "en": "The process of collecting and analyzing metrics, logs, and events from systems and applications.",
+          "da": "Processen med at indsamle og analysere metrics, logs og hændelser fra systemer og applikationer.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Alerting",
+      "definitions": [
+        {
+          "en": "The process of generating notifications when defined conditions or thresholds are met.",
+          "da": "Processen med at generere notifikationer, når definerede betingelser eller tærskler er opfyldt.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "Rollback",
+      "definitions": [
+        {
+          "en": "The process of reverting a system or deployment to a previous stable state.",
+          "da": "Processen med at tilbageføre et system eller en udrulning til en tidligere stabil tilstand.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "OLO",
+      "definitions": [
+        {
+          "en": "A telecommunications operator, other than the incumbent operator, that is licensed to provide services and may rely on regulated access to the incumbent’s network infrastructure.",
+          "da": "En teleoperatør, bortset fra den etablerede operatør, som har licens til at levere tjenester og kan være afhængig af reguleret adgang til den etablerede operatørs netværksinfrastruktur.",
+          "category_id": "commercial.governance"
+        }
+      ]
+    },
+    {
+      "term": "NIP",
+      "definitions": [
+        {
+          "en": "IP connectivity product that provides other licensed operators with access to subscribers within a defined national network scope.",
+          "da": "IP-konnektivitetsprodukt, der giver andre licenserede operatører adgang til abonnenter inden for et defineret nationalt netværksområde.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "GIP",
+      "definitions": [
+        {
+          "en": "IP connectivity product that provides other licensed operators with access to globally routed internet traffic.",
+          "da": "IP-konnektivitetsprodukt, der giver andre licenserede operatører adgang til globalt routet internettrafik.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "LIP",
+      "definitions": [
+        {
+          "en": "IP connectivity product that provides other licensed operators with connectivity within the incumbent operator’s local network domain.",
+          "da": "IP-konnektivitetsprodukt, der giver andre licenserede operatører konnektivitet inden for den etablerede operatørs lokale netværksdomæne.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "SRv6",
+      "definitions": [
+        {
+          "en": "Segment Routing over IPv6, a routing and traffic-engineering method that uses IPv6 addressing and segment identifiers to steer traffic paths.",
+          "da": "Segment Routing over IPv6, en routing- og trafikstyringsmetode, der bruger IPv6-adressering og segmentidentifikatorer til at styre trafikveje.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "FlexAlgo",
+      "definitions": [
+        {
+          "en": "Flexible Algorithm, a routing mechanism that allows traffic to be calculated and forwarded according to topology constraints and policy-based path selection.",
+          "da": "Flexible Algorithm, en routingmekanisme, der gør det muligt at beregne og videresende trafik i henhold til topologibegrænsninger og politikbaseret stivalg.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "QoS",
+      "definitions": [
+        {
+          "en": "Quality of Service, the mechanisms and policies used to prioritize and control traffic handling according to service requirements.",
+          "da": "Quality of Service, de mekanismer og politikker, der bruges til at prioritere og styre trafikbehandling i henhold til servicekrav.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "L3VPN",
+      "definitions": [
+        {
+          "en": "A Layer 3 Virtual Private Network service that provides private routed connectivity between customer sites across a shared operator network.",
+          "da": "En Layer 3 Virtual Private Network-tjeneste, der leverer privat routet konnektivitet mellem kundelokationer over et delt operatørnetværk.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "L2VPN",
+      "definitions": [
+        {
+          "en": "A Layer 2 Virtual Private Network service that provides private Ethernet or layer-2 connectivity between customer sites across a shared operator network.",
+          "da": "En Layer 2 Virtual Private Network-tjeneste, der leverer privat Ethernet- eller layer-2-konnektivitet mellem kundelokationer over et delt operatørnetværk.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "FTTH",
+      "definitions": [
+        {
+          "en": "Fiber to the Home, an access technology in which optical fiber is used to deliver service directly to residential premises.",
+          "da": "Fiber to the Home, en adgangsteknologi, hvor optisk fiber bruges til at levere tjenester direkte til boliger.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "ETTH",
+      "definitions": [
+        {
+          "en": "Ethernet to the Home, an access delivery model in which Ethernet-based connectivity is provided directly to residential premises.",
+          "da": "Ethernet to the Home, en adgangsleveringsmodel, hvor Ethernet-baseret konnektivitet leveres direkte til boliger.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "DSL",
+      "definitions": [
+        {
+          "en": "Digital Subscriber Line, an access technology that delivers broadband services over copper telephone lines.",
+          "da": "Digital Subscriber Line, en adgangsteknologi, der leverer bredbåndstjenester over kobberbaserede telefonlinjer.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "FWA",
+      "definitions": [
+        {
+          "en": "Fixed Wireless Access, a broadband access technology that delivers connectivity to a fixed location using wireless radio links.",
+          "da": "Fixed Wireless Access, en bredbåndsadgangsteknologi, der leverer konnektivitet til en fast lokation ved hjælp af trådløse radioforbindelser.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "RAN",
+      "definitions": [
+        {
+          "en": "Radio Access Network, the part of a mobile network that provides radio connectivity between user equipment and the core network.",
+          "da": "Radio Access Network, den del af et mobilnetværk, der leverer radiokonnektivitet mellem brugerudstyr og kernenetværket.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "Mobile Core",
+      "definitions": [
+        {
+          "en": "The central mobile network domain responsible for session control, mobility management, policy, authentication, and service enablement.",
+          "da": "Det centrale mobilnetværksdomæne, der er ansvarligt for sessionskontrol, mobilitetsstyring, politikker, autentifikation og aktivering af tjenester.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "2G",
+      "definitions": [
+        {
+          "en": "The second generation of mobile network technology used for digital voice, messaging, and limited data services.",
+          "da": "Anden generation af mobilnetværksteknologi, der bruges til digital tale, beskeder og begrænsede datatjenester.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "3G",
+      "definitions": [
+        {
+          "en": "The third generation of mobile network technology used for mobile voice and packet data services with higher capacity than 2G.",
+          "da": "Tredje generation af mobilnetværksteknologi, der bruges til mobil tale og pakkedatatjenester med højere kapacitet end 2G.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "4G",
+      "definitions": [
+        {
+          "en": "The fourth generation of mobile network technology used for high-speed packet data services and IP-based mobile connectivity.",
+          "da": "Fjerde generation af mobilnetværksteknologi, der bruges til højhastigheds pakkedatatjenester og IP-baseret mobil konnektivitet.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "LTE",
+      "definitions": [
+        {
+          "en": "Long Term Evolution, a 4G mobile radio access technology used for high-speed packet data connectivity.",
+          "da": "Long Term Evolution, en 4G mobil radioadgangsteknologi, der bruges til højhastigheds pakkedatakonnektivitet.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "5G",
+      "definitions": [
+        {
+          "en": "The fifth generation of mobile network technology designed for higher capacity, lower latency, and broader service capabilities.",
+          "da": "Femte generation af mobilnetværksteknologi, designet til højere kapacitet, lavere latenstid og bredere servicekapabiliteter.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "NAT",
+      "definitions": [
+        {
+          "en": "Network Address Translation, a function that rewrites IP address information to enable connectivity between different address domains or conserve public address space.",
+          "da": "Network Address Translation, en funktion, der omskriver IP-adresseinformation for at muliggøre konnektivitet mellem forskellige adressedomæner eller bevare offentligt adresserum.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "CPE",
+      "definitions": [
+        {
+          "en": "Customer Premises Equipment, the device or equipment located at the customer site and used to access operator services.",
+          "da": "Customer Premises Equipment, enheden eller udstyret placeret hos kunden, som bruges til at få adgang til operatørtjenester.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "BNG",
+      "definitions": [
+        {
+          "en": "Broadband Network Gateway, a network function that terminates subscriber sessions and applies policy, authentication, addressing, and service control for broadband access services.",
+          "da": "Broadband Network Gateway, en netværksfunktion, der terminerer abonnentsessioner og anvender politikker, autentifikation, adressering og servicekontrol for bredbåndsadgangstjenester.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "CGNAT",
+      "definitions": [
+        {
+          "en": "Carrier Grade Network Address Translation, a large-scale NAT function used by an operator to translate many private subscriber addresses to shared public IP addresses.",
+          "da": "Carrier Grade Network Address Translation, en NAT-funktion i stor skala, som bruges af en operatør til at oversætte mange private abonnentadresser til delte offentlige IP-adresser.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "VRF",
+      "definitions": [
+        {
+          "en": "Virtual Routing and Forwarding, a mechanism that creates separate routing tables on the same network device to isolate traffic and services.",
+          "da": "Virtual Routing and Forwarding, en mekanisme, der opretter separate routingtabeller på samme netværksenhed for at isolere trafik og tjenester.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "EVPN",
+      "definitions": [
+        {
+          "en": "Ethernet VPN, a control-plane technology used to deliver scalable Layer 2 and Layer 3 VPN services, often together with VXLAN or MPLS transport.",
+          "da": "Ethernet VPN, en control-plane-teknologi, der bruges til at levere skalerbare Layer 2- og Layer 3-VPN-tjenester, ofte sammen med VXLAN- eller MPLS-transport.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "VXLAN",
+      "definitions": [
+        {
+          "en": "Virtual Extensible LAN, a network overlay technology that extends Layer 2 connectivity across Layer 3 infrastructure using encapsulation.",
+          "da": "Virtual Extensible LAN, en netværksoverlay-teknologi, der udvider Layer 2-konnektivitet over Layer 3-infrastruktur ved hjælp af indkapsling.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "OSPF",
+      "definitions": [
+        {
+          "en": "Open Shortest Path First, a link-state interior gateway routing protocol used to exchange routing information within an IP network.",
+          "da": "Open Shortest Path First, en link-state interior gateway-routingprotokol, der bruges til at udveksle routinginformation i et IP-netværk.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "IS-IS",
+      "definitions": [
+        {
+          "en": "Intermediate System to Intermediate System, a link-state routing protocol used to exchange routing information within an operator network.",
+          "da": "Intermediate System to Intermediate System, en link-state-routingprotokol, der bruges til at udveksle routinginformation i et operatørnetværk.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "BFD",
+      "definitions": [
+        {
+          "en": "Bidirectional Forwarding Detection, a protocol used to detect forwarding path failures rapidly between two systems.",
+          "da": "Bidirectional Forwarding Detection, en protokol, der bruges til hurtigt at opdage fejl i videresendelsesstier mellem to systemer.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "MTU",
+      "definitions": [
+        {
+          "en": "Maximum Transmission Unit, the largest packet size that can be transmitted over a network interface or path without fragmentation.",
+          "da": "Maximum Transmission Unit, den største pakkestørrelse, der kan overføres over en netværksgrænseflade eller sti uden fragmentering.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "PTP",
+      "definitions": [
+        {
+          "en": "Precision Time Protocol, a timing synchronization protocol used to distribute highly accurate time across packet networks.",
+          "da": "Precision Time Protocol, en tids-synkroniseringsprotokol, der bruges til at distribuere meget præcis tid over pakkebaserede netværk.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "SyncE",
+      "definitions": [
+        {
+          "en": "Synchronous Ethernet, a physical-layer timing synchronization method that distributes frequency over Ethernet networks.",
+          "da": "Synchronous Ethernet, en synkroniseringsmetode på det fysiske lag, der distribuerer frekvens over Ethernet-netværk.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "GMC",
+      "definitions": [
+        {
+          "en": "Grandmaster Clock, the primary time source in a synchronization domain that provides reference time to other clocks and network elements.",
+          "da": "Grandmaster Clock, den primære tidskilde i et synkroniseringsdomæne, som leverer referencetid til andre ure og netværkselementer.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "APN",
+      "definitions": [
+        {
+          "en": "Access Point Name, the identifier used in mobile networks to define the external packet data network or service that a subscriber connects to.",
+          "da": "Access Point Name, den identifikator, der bruges i mobilnetværk til at definere det eksterne pakkedatanetværk eller den tjeneste, som en abonnent forbinder til.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "PGW",
+      "definitions": [
+        {
+          "en": "Packet Gateway, the mobile core function that connects a mobile packet network to external IP networks and applies policy, addressing, and charging functions.",
+          "da": "Packet Gateway, den mobilkernefunktion, der forbinder et mobilt pakkedatanetværk til eksterne IP-netværk og anvender politikker, adressering og opkrævningsfunktioner.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "SGW",
+      "definitions": [
+        {
+          "en": "Serving Gateway, the mobile core function that routes and forwards user-plane traffic between the radio access network and packet gateway functions.",
+          "da": "Serving Gateway, den mobilkernefunktion, der router og videresender user-plane-trafik mellem radioadgangsnetværket og packet gateway-funktioner.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "UPF",
+      "definitions": [
+        {
+          "en": "User Plane Function, the 5G core function responsible for forwarding user traffic and applying user-plane handling policies.",
+          "da": "User Plane Function, den 5G-kernefunktion, der er ansvarlig for videresendelse af brugertrafik og anvendelse af user-plane-håndteringspolitikker.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "AMF",
+      "definitions": [
+        {
+          "en": "Access and Mobility Management Function, the 5G core control-plane function responsible for registration, reachability, and mobility management.",
+          "da": "Access and Mobility Management Function, den 5G-kernes control-plane-funktion, der er ansvarlig for registrering, reachability og mobilitetsstyring.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "SMF",
+      "definitions": [
+        {
+          "en": "Session Management Function, the 5G core control-plane function responsible for session establishment, modification, and release.",
+          "da": "Session Management Function, den 5G-kernes control-plane-funktion, der er ansvarlig for etablering, ændring og frigivelse af sessioner.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "HLR",
+      "definitions": [
+        {
+          "en": "Home Location Register, a legacy mobile core database containing subscriber identity and service profile information.",
+          "da": "Home Location Register, en ældre mobilkerne-database, der indeholder abonnentidentitet og serviceprofilinformation.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "HSS",
+      "definitions": [
+        {
+          "en": "Home Subscriber Server, the subscriber database function used in modern mobile networks for authentication, authorization, and subscriber profile management.",
+          "da": "Home Subscriber Server, abonnentdatabasefunktionen, der bruges i moderne mobilnetværk til autentifikation, autorisation og administration af abonnentprofiler.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "UDM",
+      "definitions": [
+        {
+          "en": "Unified Data Management, the 5G core function responsible for managing subscriber identity, subscription data, and related control data.",
+          "da": "Unified Data Management, den 5G-kernefunktion, der er ansvarlig for at administrere abonnentidentitet, abonnementsdata og relaterede kontroldata.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "ODF",
+      "definitions": [
+        {
+          "en": "Optical Distribution Frame, a fiber termination and cross-connect structure used to organize, patch, and manage optical circuits.",
+          "da": "Optical Distribution Frame, en fiberterminerings- og cross-connect-struktur, der bruges til at organisere, patch'e og administrere optiske kredsløb.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "Splitter",
+      "definitions": [
+        {
+          "en": "A passive optical component that divides one optical signal into multiple output paths in a PON access network.",
+          "da": "En passiv optisk komponent, der deler ét optisk signal op i flere udgangsveje i et PON-adgangsnetværk.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "PON",
+      "definitions": [
+        {
+          "en": "Passive Optical Network, a fiber access architecture that uses passive splitters between the operator network and customer premises.",
+          "da": "Passive Optical Network, en fiberadgangsarkitektur, der bruger passive splittere mellem operatørnetværket og kundens lokation.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "GPON",
+      "definitions": [
+        {
+          "en": "Gigabit Passive Optical Network, a PON technology used to deliver broadband access services over shared optical infrastructure.",
+          "da": "Gigabit Passive Optical Network, en PON-teknologi, der bruges til at levere bredbåndsadgangstjenester over delt optisk infrastruktur.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "XGS-PON",
+      "definitions": [
+        {
+          "en": "10 Gigabit Symmetrical Passive Optical Network, a PON technology that provides symmetrical high-speed optical access services.",
+          "da": "10 Gigabit Symmetrical Passive Optical Network, en PON-teknologi, der leverer symmetriske højhastigheds optiske adgangstjenester.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "Patch Panel",
+      "definitions": [
+        {
+          "en": "A termination panel used to organize and interconnect copper or fiber circuits through patching.",
+          "da": "Et termineringspanel, der bruges til at organisere og sammenkoble kobber- eller fiberkredsløb via patching.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "Feeder Fiber",
+      "definitions": [
+        {
+          "en": "The optical fiber segment connecting the operator central point or OLT location to the distribution part of the access network.",
+          "da": "Det optiske fibersegment, der forbinder operatørens centrale punkt eller OLT-lokation med distributionsdelen af adgangsnetværket.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "Distribution Fiber",
+      "definitions": [
+        {
+          "en": "The optical fiber segment connecting the feeder part of the access network to local splitters or customer-side access segments.",
+          "da": "Det optiske fibersegment, der forbinder feeder-delen af adgangsnetværket med lokale splittere eller kundesidens adgangssegmenter.",
+          "category_id": "network.access"
+        }
+      ]
+    },
+    {
+      "term": "SLTE",
+      "definitions": [
+        {
+          "en": "Submarine Line Terminal Equipment, the transmission equipment installed at cable landing stations to terminate and operate submarine optical cable systems.",
+          "da": "Submarine Line Terminal Equipment, det transmissionsudstyr, der installeres på kabel landingsstationer for at terminere og drive undersøiske optiske kabelsystemer.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Submarine Cable",
+      "definitions": [
+        {
+          "en": "A fiber-optic cable system installed undersea to carry telecommunications traffic between geographically separated landing points.",
+          "da": "Et fiberoptisk kabelsystem installeret under havet for at transportere telekommunikationstrafik mellem geografisk adskilte landingspunkter.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Beach Manhole",
+      "definitions": [
+        {
+          "en": "A protected underground cable access structure near the shoreline where the submarine cable transitions toward inland infrastructure.",
+          "da": "En beskyttet underjordisk kabeladgangsstruktur nær kystlinjen, hvor det undersøiske kabel overgår til landbaseret infrastruktur.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Cable Landing Station",
+      "definitions": [
+        {
+          "en": "A facility where a submarine cable system is terminated, powered, monitored, and connected to terrestrial transmission infrastructure.",
+          "da": "En facilitet, hvor et undersøisk kabelsystem termineres, strømforsynes, overvåges og forbindes til terrestrisk transmissionsinfrastruktur.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Branching Unit",
+      "definitions": [
+        {
+          "en": "A subsea component used to split or direct optical paths from a main submarine cable route toward branch routes or landing points.",
+          "da": "En undervandskomponent, der bruges til at opdele eller dirigere optiske stier fra en hovedrute i et undersøisk kabel mod grenruter eller landingspunkter.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Repeater",
+      "definitions": [
+        {
+          "en": "An active subsea device used in long-haul submarine cable systems to amplify or regenerate optical signals over distance.",
+          "da": "En aktiv undervandsenhed, der bruges i long-haul undersøiske kabelsystemer til at forstærke eller regenerere optiske signaler over afstand.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Wet Plant",
+      "definitions": [
+        {
+          "en": "The subsea part of a submarine cable system, including cable, repeaters, branching units, and other undersea components.",
+          "da": "Den undersøiske del af et kabelsystem, herunder kabel, repeatere, branching units og andre undervandskomponenter.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Dry Plant",
+      "definitions": [
+        {
+          "en": "The terrestrial part of a submarine cable system, including landing station equipment, SLTE, power feeding, and terrestrial backhaul connections.",
+          "da": "Den landbaserede del af et undersøisk kabelsystem, herunder landingsstationsudstyr, SLTE, strømforsyning og terrestriske backhaul-forbindelser.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Fiber Pair",
+      "definitions": [
+        {
+          "en": "A matched pair of optical fibers used together to carry bidirectional telecommunications traffic in a cable system.",
+          "da": "Et matchet par af optiske fibre, der bruges sammen til at føre tovejstelekommunikationstrafik i et kabelsystem.",
+          "category_id": "transmission.fiber"
+        }
+      ]
+    },
+    {
+      "term": "Power Feeding Equipment",
+      "definitions": [
+        {
+          "en": "The equipment at a cable landing station that supplies electrical power to subsea active components such as repeaters.",
+          "da": "Udstyret på en kabel landingsstation, der leverer elektrisk strøm til aktive undervandskomponenter såsom repeatere.",
+          "category_id": "transmission.submarine_cable"
+        }
+      ]
+    },
+    {
+      "term": "Wholesale",
+      "definitions": [
+        {
+          "en": "The business model in which telecommunications products, network access, or capacity are sold to other operators, service providers, or partners rather than directly to end users.",
+          "da": "Forretningsmodellen, hvor telekommunikationsprodukter, netværksadgang eller kapacitet sælges til andre operatører, tjenesteudbydere eller partnere frem for direkte til slutbrugere.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "Retail",
+      "definitions": [
+        {
+          "en": "The business model in which telecommunications products or services are sold directly to end users or customer organizations.",
+          "da": "Forretningsmodellen, hvor telekommunikationsprodukter eller -tjenester sælges direkte til slutbrugere eller kundeorganisationer.",
+          "category_id": "commercial.retail"
+        }
+      ]
+    },
+    {
+      "term": "Partner",
+      "definitions": [
+        {
+          "en": "An external organization that cooperates with delivering, supporting, or extending telecommunications products or services.",
+          "da": "En ekstern organisation, der samarbejder om levering, understøttelse eller udvidelse af telekommunikationsprodukter eller -tjenester.",
+          "category_id": "commercial.governance"
+        }
+      ]
+    },
+    {
+      "term": "Interconnect",
+      "definitions": [
+        {
+          "en": "A commercial and technical arrangement that enables traffic exchange between two operator networks.",
+          "da": "En kommerciel og teknisk aftale, der muliggør trafikudveksling mellem to operatørnetværk.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "Carrier",
+      "definitions": [
+        {
+          "en": "A telecommunications operator or transport provider that carries voice, data, or other communications traffic across its network infrastructure.",
+          "da": "En teleoperatør eller transportudbyder, der fører tale-, data- eller anden kommunikationstrafik over sin netværksinfrastruktur.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "Service Provider",
+      "definitions": [
+        {
+          "en": "An organization that provides telecommunications or related digital services to customers using its own or third-party infrastructure.",
+          "da": "En organisation, der leverer telekommunikations- eller relaterede digitale tjenester til kunder ved hjælp af egen eller tredjepartsinfrastruktur.",
+          "category_id": "commercial.governance"
+        }
+      ]
+    },
+    {
+      "term": "Incumbent Operator",
+      "definitions": [
+        {
+          "en": "The historically established primary telecommunications operator in a market, typically owning major network infrastructure and often subject to specific regulatory obligations.",
+          "da": "Den historisk etablerede primære teleoperatør i et marked, som typisk ejer væsentlig netværksinfrastruktur og ofte er underlagt særlige regulatoriske forpligtelser.",
+          "category_id": "commercial.governance"
+        }
+      ]
+    },
+    {
+      "term": "SLA",
+      "definitions": [
+        {
+          "en": "Service Level Agreement, a formal agreement defining measurable service commitments, targets, and responsibilities between parties.",
+          "da": "Service Level Agreement, en formel aftale, der definerer målbare serviceforpligtelser, målsætninger og ansvar mellem parter.",
+          "category_id": "commercial.governance"
+        }
+      ]
+    },
+    {
+      "term": "Churn",
+      "definitions": [
+        {
+          "en": "The rate at which customers or subscriptions discontinue service during a defined period.",
+          "da": "Den rate, hvormed kunder eller abonnementer ophører med en tjeneste i en defineret periode.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "NRR",
+      "definitions": [
+        {
+          "en": "Net Revenue Retention, a metric that measures retained recurring revenue from an existing customer base after accounting for expansion, contraction, and churn.",
+          "da": "Net Revenue Retention, en måling, der viser fastholdt tilbagevendende omsætning fra en eksisterende kundebase efter hensyntagen til ekspansion, reduktion og churn.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "EBITDA",
+      "definitions": [
+        {
+          "en": "Earnings Before Interest, Taxes, Depreciation, and Amortization, a financial measure used to assess operating performance.",
+          "da": "Earnings Before Interest, Taxes, Depreciation, and Amortization, et finansielt mål, der bruges til at vurdere driftsmæssig performance.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "CapEx",
+      "definitions": [
+        {
+          "en": "Capital Expenditure, spending used to acquire, build, or improve assets that provide value over multiple periods.",
+          "da": "Capital Expenditure, udgifter, der bruges til at anskaffe, opbygge eller forbedre aktiver, som skaber værdi over flere perioder.",
+          "category_id": "commercial"
+        }
+      ]
+    },
+    {
+      "term": "OpEx",
+      "definitions": [
+        {
+          "en": "Operating Expenditure, spending incurred in the normal operation and maintenance of business activities and services.",
+          "da": "Operating Expenditure, udgifter, der påløber ved normal drift og vedligeholdelse af forretningsaktiviteter og tjenester.",
+          "category_id": "commercial.finance"
+        }
+      ]
+    },
+    {
+      "term": "ASN",
+      "definitions": [
+        {
+          "en": "A unique identifier assigned to an autonomous system, used in inter-domain routing to exchange routing information between networks using BGP.",
+          "da": "En unik identifikator tildelt et autonomt system, der bruges i inter-domain routing til at udveksle routinginformation mellem netværk ved hjælp af BGP.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "Mobile Cell",
+      "definitions": [
+        {
+          "en": "A geographic area served by a radio access network where a base station provides wireless coverage and capacity to user devices.",
+          "da": "Et geografisk område, der betjenes af et radioadgangsnetværk, hvor en basestation leverer trådløs dækning og kapacitet til brugerudstyr.",
+          "category_id": "network.mobile"
+        }
+      ]
+    },
+    {
+      "term": "IPv4",
+      "definitions": [
+        {
+          "en": "A network layer protocol that uses 32-bit addressing to identify devices and route traffic across IP networks.",
+          "da": "En netværkslagsprotokol, der bruger 32-bit adressering til at identificere enheder og route trafik over IP-netværk.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "IPv6",
+      "definitions": [
+        {
+          "en": "A network layer protocol that uses 128-bit addressing to provide a vastly larger address space and improved routing and addressing capabilities compared to IPv4.",
+          "da": "En netværkslagsprotokol, der bruger 128-bit adressering til at levere et langt større adresserum og forbedrede routing- og adresseringsmuligheder sammenlignet med IPv4.",
+          "category_id": "network.protocols"
+        }
+      ]
+    },
+    {
+      "term": "NSP",
+      "definitions": [
+        {
+          "en": "Network Services Platform is a centralized network management and control platform used to monitor, configure, automate, and orchestrate network services and infrastructure across multiple network domains.",
+          "da": "Network Services Platform er en centraliseret platform til netværksstyring og kontrol, der bruges til at overvåge, konfigurere, automatisere og orkestrere netværkstjenester og infrastruktur på tværs af flere netværksdomæner.",
+          "category_id": "operations"
+        }
+      ]
+    },
+    {
+      "term": "GEO",
+      "definitions": [
+        {
+          "en": "A type of satellite orbit at approximately 35,786 km altitude where a satellite remains fixed relative to a point on the Earth’s surface, enabling continuous coverage over a specific geographic area.",
+          "da": "En type satellitbane i cirka 35.786 km højde, hvor en satellit forbliver fast i forhold til et punkt på jordens overflade og muliggør kontinuerlig dækning over et specifikt geografisk område.",
+          "category_id": "transmission.satellite"
+        }
+      ]
+    },
+    {
+      "term": "LEO",
+      "definitions": [
+        {
+          "en": "A type of satellite orbit typically ranging from about 160 km to 2,000 km altitude where satellites move rapidly relative to the Earth’s surface, providing low-latency coverage through satellite constellations.",
+          "da": "En type satellitbane, der typisk ligger fra cirka 160 km til 2.000 km højde, hvor satellitter bevæger sig hurtigt i forhold til jordens overflade og leverer dækning med lav latenstid gennem satellitkonstellationer.",
+          "category_id": "transmission.satellite"
+        }
+      ]
+    },
+    {
+      "term": "MEO",
+      "definitions": [
+        {
+          "en": "A type of satellite orbit typically ranging from about 2,000 km to 35,786 km altitude, where satellites provide regional or global coverage with lower latency than GEO and wider coverage per satellite than LEO.",
+          "da": "En type satellitbane, der typisk ligger fra cirka 2.000 km til 35.786 km højde, hvor satellitter leverer regional eller global dækning med lavere latenstid end GEO og bredere dækning pr. satellit end LEO.",
+          "category_id": "transmission.satellite"
+        }
+      ]
+    },
+    {
+      "term": "Border Router",
+      "definitions": [
+        {
+          "en": "A router that connects an autonomous system to external networks or other autonomous systems, typically running inter-domain routing protocols such as BGP.",
+          "da": "En router, der forbinder et autonomt system med eksterne netværk eller andre autonome systemer, og som typisk kører inter-domain-routingprotokoller såsom BGP.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "PoI",
+      "definitions": [
+        {
+          "en": "(Point of Interconnect) A physical or logical location where two networks interconnect to exchange traffic under agreed technical and commercial conditions.",
+          "da": "(Point of Interconnect) En fysisk eller logisk lokation, hvor to netværk sammenkobles for at udveksle trafik under aftalte tekniske og kommercielle betingelser.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "Colocation",
+      "definitions": [
+        {
+          "en": "A service where equipment owned by one party is housed within another party’s facility, providing space, power, cooling, and connectivity infrastructure.",
+          "da": "En tjeneste, hvor udstyr ejet af én part placeres i en anden parts facilitet, som leverer plads, strøm, køling og konnektivitetsinfrastruktur.",
+          "category_id": "commercial.wholesale"
+        }
+      ]
+    },
+    {
+      "term": "Northbound",
+      "definitions": [
+        {
+          "en": "Referring to interfaces, communication, or data flow from a network system toward higher-level systems such as service platforms, orchestration layers, or business systems.",
+          "da": "Henviser til grænseflader, kommunikation eller dataflow fra et netværkssystem mod højere niveauers systemer såsom serviceplatforme, orkestreringslag eller forretningssystemer.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Southbound",
+      "definitions": [
+        {
+          "en": "Referring to interfaces, communication, or data flow from a network system toward lower-level elements such as network devices, infrastructure, or underlying resources.",
+          "da": "Henviser til grænseflader, kommunikation eller dataflow fra et netværkssystem mod lavere niveauers elementer såsom netværksenheder, infrastruktur eller underliggende ressourcer.",
+          "category_id": "integration"
+        }
+      ]
+    },
+    {
+      "term": "Upstream",
+      "definitions": [
+        {
+          "en": "Referring to traffic or connectivity directed toward a higher-level network, provider, or core network, typically moving away from the end user.",
+          "da": "Henviser til trafik eller konnektivitet rettet mod et højere niveau af netværk, en udbyder eller et kernenetværk, typisk væk fra slutbrugeren.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "Downstream",
+      "definitions": [
+        {
+          "en": "Referring to traffic or connectivity directed toward end users or access networks, typically moving from the core or provider network toward the user.",
+          "da": "Henviser til trafik eller konnektivitet rettet mod slutbrugere eller adgangsnetværk, typisk fra kerne- eller udbydernetværket mod brugeren.",
+          "category_id": "transmission"
+        }
+      ]
+    },
+    {
+      "term": "RIR",
+      "definitions": [
+        {
+          "en": "Regional Internet Registry. Organization responsible for allocating and managing IP address space and autonomous system numbers within a specific geographic region.",
+          "da": "Regional Internet Registry. Organisation ansvarlig for at allokere og administrere IP-adresserum og autonome systemnumre inden for en bestemt geografisk region.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "LIR",
+      "definitions": [
+        {
+          "en": "Local Internet Registry. Organization, typically an ISP or large enterprise, that receives IP address allocations from an RIR and assigns them to its customers or internal networks.",
+          "da": "Local Internet Registry. Organisation, typisk en ISP eller stor virksomhed, der modtager IP-adresseallokeringer fra et RIR og tildeler dem til sine kunder eller interne netværk.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "RIPE",
+      "definitions": [
+        {
+          "en": "The Regional Internet Registry responsible for Europe, the Middle East, and parts of Central Asia, managing IP address allocation and AS number distribution in its service region.",
+          "da": "Det Regional Internet Registry, der er ansvarligt for Europa, Mellemøsten og dele af Centralasien, og som administrerer IP-adresseallokering og fordeling af AS-numre i sit serviceområde.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "APNIC",
+      "definitions": [
+        {
+          "en": "The Regional Internet Registry responsible for the Asia-Pacific region, managing IP address and AS number resources.",
+          "da": "Det Regional Internet Registry, der er ansvarligt for Asien-Stillehavsområdet, og som administrerer IP-adresse- og AS-nummerressourcer.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "ARIN",
+      "definitions": [
+        {
+          "en": "The Regional Internet Registry responsible for North America, managing IP address and AS number resources.",
+          "da": "Det Regional Internet Registry, der er ansvarligt for Nordamerika, og som administrerer IP-adresse- og AS-nummerressourcer.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "LACNIC",
+      "definitions": [
+        {
+          "en": "The Regional Internet Registry responsible for Latin America and the Caribbean, managing IP address and AS number resources.",
+          "da": "Det Regional Internet Registry, der er ansvarligt for Latinamerika og Caribien, og som administrerer IP-adresse- og AS-nummerressourcer.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "AFRINIC",
+      "definitions": [
+        {
+          "en": "The Regional Internet Registry responsible for Africa, managing IP address and AS number resources.",
+          "da": "Det Regional Internet Registry, der er ansvarligt for Afrika, og som administrerer IP-adresse- og AS-nummerressourcer.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "NRO",
+      "definitions": [
+        {
+          "en": "An organization that coordinates the activities of all Regional Internet Registries and represents their collective interests at the global level.",
+          "da": "En organisation, der koordinerer aktiviteterne for alle Regional Internet Registries og repræsenterer deres fælles interesser på globalt niveau.",
+          "category_id": "network.governance"
+        }
+      ]
+    },
+    {
+      "term": "DNS",
+      "definitions": [
+        {
+          "en": "Domain Name System. A hierarchical and distributed naming system that translates human-readable domain names into IP addresses used for network communication.",
+          "da": "Domain Name System. Et hierarkisk og distribueret navngivningssystem, der oversætter menneskeligt læsbare domænenavne til IP-adresser, som bruges til netværkskommunikation.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "DNS Root Servers",
+      "definitions": [
+        {
+          "en": "A set of globally distributed authoritative name servers that serve the root zone of the DNS and direct queries to the appropriate top-level domain servers.",
+          "da": "Et sæt globalt distribuerede autoritative navneservere, der betjener DNS’ens root-zone og dirigerer forespørgsler til de relevante topdomæneservere.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "K-ROOT",
+      "definitions": [
+        {
+          "en": "One of the DNS root server instances, operated by RIPE NCC, providing root DNS services through a globally distributed anycast network.",
+          "da": "En af DNS root server-instanserne, drevet af RIPE NCC, som leverer root DNS-tjenester gennem et globalt distribueret anycast-netværk.",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "Anycast",
+      "definitions": [
+        {
+          "en": "A network addressing and routing method in which the same IP address is announced from multiple geographically distributed locations, and traffic is automatically routed to the nearest or best-performing instance based on routing protocols.",
+          "da": "En netværksadresserings- og routingmetode, hvor den samme IP-adresse annonceres fra flere geografisk distribuerede lokationer, og trafikken automatisk routes til den nærmeste eller bedst performende instans baseret på routingprotokoller.",
+          "category_id": "network"
+        }
+      ]
+    },
+    {
+      "term": "Radius",
+      "definitions": [
+        {
+          "en": "A protocol used to provide centralized authentication, authorization, and accounting (AAA) for users or devices accessing a network.",
+          "da": "En protokol, der anvendes til at levere centraliseret autentifikation, autorisation og regnskabsføring (AAA) for brugere eller enheder, der får adgang til et netværk",
+          "category_id": "network.services"
+        }
+      ]
+    },
+    {
+      "term": "Waveguide",
+      "definitions": [
+        {
+          "en": "A physical structure, usually a hollow metallic tube used to guide high-frequency electromagnetic waves between microwave components, typically connecting a radio unit to an antenna with minimal signal loss.",
+          "da": "En fysisk struktur, normalt et hult metallisk rør, der bruges til at lede højfrekvente elektromagnetiske bølger mellem mikrobølgekomponenter, typisk til at forbinde en radioenhed med en antenne med minimalt signaltab.",
+          "category_id": "transmission.microwave"
+        }
+      ]
+    }
+  ]
+}
