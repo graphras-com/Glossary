@@ -1,13 +1,5 @@
-services:
-  glossary:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - glossary-data:/data
-    environment:
-      - DATABASE_PATH=/data/dictionary.db
-    restart: unless-stopped
-
-volumes:
-  glossary-data:
+steps:
+  smoke:
+    image: alpine:3.20
+    commands:
+      - echo "pipeline works"
