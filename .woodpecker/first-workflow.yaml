@@ -1,5 +1,6 @@
 steps:
-  smoke:
-    image: alpine:3.20
+  test:
+    image: python:3.12-alpine
     commands:
-      - echo "pipeline works"
+      - uv sync
+      - uv run pytest
