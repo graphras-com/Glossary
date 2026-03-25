@@ -50,6 +50,8 @@ jobs:
   secrets-scan:
     name: Secrets
     uses: ./.github/workflows/python-gitleaks.yml
+    secrets:
+      GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   # ── Release ───────────────────────────────────────────────────────
   release:
