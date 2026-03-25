@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import jsPDF from "jspdf";
 import generateGlossaryPdf from "./generateGlossaryPdf.js";
 

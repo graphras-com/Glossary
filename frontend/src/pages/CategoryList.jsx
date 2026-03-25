@@ -10,17 +10,23 @@ export default function CategoryList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadCategories();
-  }, []);
+    let cancelled = false;
 
-  function loadCategories() {
-    setLoading(true);
-    setError("");
     getCategories()
-      .then(setCategories)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }
+      .then((data) => {
+        if (!cancelled) setCategories(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function handleDelete(id) {
     try {

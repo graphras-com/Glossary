@@ -19,19 +19,10 @@ export default function generateGlossaryPdf(
   const margin = 18;
   const contentWidth = pageWidth - margin * 2;
   const bottomMargin = 20; // reserve space at bottom of each page
-  const usableHeight = pageHeight - margin - bottomMargin;
 
   const doc = new jsPDF({ unit: "mm", format: "a4" });
 
   let y = margin;
-
-  /** Add a new page and reset y to top margin */
-  function ensureSpace(needed) {
-    if (y + needed > pageHeight - bottomMargin) {
-      doc.addPage();
-      y = margin;
-    }
-  }
 
   /**
    * Measure the total height a term block will occupy without drawing.
@@ -118,15 +109,12 @@ export default function generateGlossaryPdf(
     doc.setFontSize(tocFontSize);
 
     // Measure total width to centre the line
-    let totalWidth = 0;
     const widths = {};
     for (const letter of letters) {
       const w = doc.getTextWidth(letter);
       widths[letter] = w;
-      totalWidth += w;
     }
     const sepWidth = doc.getTextWidth(dotSep);
-    totalWidth += sepWidth * (letters.length - 1);
 
     // Wrap into multiple rows if the TOC is wider than the content area
     const rows = [];

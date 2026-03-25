@@ -7,7 +7,7 @@ import useCategoryMap from "../hooks/useCategoryMap";
 export default function CategoryEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { categories: allCategories, categoryMap, breadcrumb: categoryBreadcrumb } = useCategoryMap();
+  const { categories: allCategories, breadcrumb: categoryBreadcrumb } = useCategoryMap();
   const categories = allCategories.filter((c) => c.id !== id);
   const [label, setLabel] = useState("");
   const [parentId, setParentId] = useState("");

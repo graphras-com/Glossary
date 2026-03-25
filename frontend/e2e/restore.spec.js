@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { Buffer } from "node:buffer";
 import { mockApi, CATEGORIES, TERMS } from "./helpers.js";
 
 test.describe("Restore page", () => {

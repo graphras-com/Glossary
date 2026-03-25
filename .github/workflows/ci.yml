@@ -31,6 +31,7 @@ jobs:
   # ── Frontend ──────────────────────────────────────────────────────
   fe-lint:
     name: Frontend Lint
+    needs: [fe-unit]
     uses: ./.github/workflows/frontend-lint.yml
 
   fe-build:
