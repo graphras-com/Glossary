@@ -66,11 +66,15 @@ test.describe("Glossary (Terms list)", () => {
     await page.goto("/terms");
     await page.click('a:has-text("+ New Term")');
     await expect(page).toHaveURL(/\/terms\/new/);
+    await expect(page.getByRole("heading", { name: "New Term" })).toBeVisible();
 
-    await page.fill('input[type="text"]', "Throughput");
-    // Fill the English definition textarea (first textarea)
-    await page.locator("textarea").first().fill("The amount of data moved successfully in a given time period.");
-    await page.selectOption("select", { label: "Network" });
+    await page.fill("#term-name", "Throughput");
+    await page
+      .locator("#definition-en-0")
+      .fill("The amount of data moved successfully in a given time period.");
+    await page
+      .locator("#definition-category-0")
+      .selectOption({ label: "Network" });
 
     await page.click('button:has-text("Create Term")');
     // TermCreate redirects to /terms with scrollToTerm state

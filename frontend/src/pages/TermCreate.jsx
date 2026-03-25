@@ -60,8 +60,9 @@ export default function TermCreate() {
 
       <form onSubmit={handleSubmit} className="form">
         <div className="form-group">
-          <label>Term</label>
+          <label htmlFor="term-name">Term</label>
           <input
+            id="term-name"
             type="text"
             className="input"
             value={termName}
@@ -87,8 +88,9 @@ export default function TermCreate() {
             </div>
             <div className="card-body">
               <div className="form-group">
-                <label>English</label>
+                <label htmlFor={`definition-en-${i}`}>English</label>
                 <textarea
+                  id={`definition-en-${i}`}
                   className="input"
                   value={def.en}
                   onChange={(e) => updateDefinition(i, "en", e.target.value)}
@@ -97,8 +99,9 @@ export default function TermCreate() {
                 />
               </div>
               <div className="form-group">
-                <label>Danish (optional)</label>
+                <label htmlFor={`definition-da-${i}`}>Danish (optional)</label>
                 <textarea
+                  id={`definition-da-${i}`}
                   className="input"
                   value={def.da}
                   onChange={(e) => updateDefinition(i, "da", e.target.value)}
@@ -106,8 +109,9 @@ export default function TermCreate() {
                 />
               </div>
               <div className="form-group">
-                <label>Category</label>
+                <label htmlFor={`definition-category-${i}`}>Category</label>
                 <select
+                  id={`definition-category-${i}`}
                   className="input"
                   value={def.category_id}
                   onChange={(e) => updateDefinition(i, "category_id", e.target.value)}
