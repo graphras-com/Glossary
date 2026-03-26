@@ -53,11 +53,21 @@ jobs:
     secrets:
       GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
+  docker-image:
+    name: Docker Image
+    needs: [py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan]
+    uses: ./.github/workflows/build-and-push.yml
+    with:
+      push-image: ${{ github.event_name != 'pull_request' }}
+    permissions:
+      contents: read
+      packages: write
+
   # ── Release ───────────────────────────────────────────────────────
   release:
     name: Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan]
+    needs: [py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan, docker-image]
     uses: ./.github/workflows/python-release.yml
     permissions:
       contents: write
