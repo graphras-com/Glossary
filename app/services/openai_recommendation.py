@@ -8,6 +8,37 @@ class RecommendationServiceError(Exception):
     pass
 
 
+def _format_provider_error(response: httpx.Response) -> str:
+    status = response.status_code
+    message = ""
+
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = None
+
+    if isinstance(payload, dict):
+        error = payload.get("error")
+        if isinstance(error, dict):
+            message = str(error.get("message") or "").strip()
+            error_type = str(error.get("type") or "").strip()
+            error_code = str(error.get("code") or "").strip()
+            extras = [value for value in [error_type, error_code] if value]
+            if extras:
+                suffix = ", ".join(extras)
+                message = f"{message} ({suffix})" if message else suffix
+        if not message:
+            message = str(payload.get("detail") or "").strip()
+
+    if not message:
+        message = response.text.strip()
+
+    if not message:
+        message = "Unknown provider error"
+
+    return f"AI provider returned {status}: {message}"
+
+
 async def recommend_definition(term: str, category_context: str | None = None) -> dict:
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
@@ -53,7 +84,7 @@ async def recommend_definition(term: str, category_context: str | None = None) -
         raise RecommendationServiceError("Failed to reach AI provider") from exc
 
     if response.status_code >= 400:
-        raise RecommendationServiceError("AI provider returned an error")
+        raise RecommendationServiceError(_format_provider_error(response))
 
     data = response.json()
     content = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
