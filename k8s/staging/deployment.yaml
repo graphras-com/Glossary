@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glossary
+  namespace: glossary-staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: glossary
+  template:
+    metadata:
+      labels:
+        app: glossary
+    spec:
+      imagePullSecrets:
+        - name: ghcr-creds
+      containers:
+        - name: glossary
+          image: ghcr.io/graphras-com/glossary:main
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_PATH
+              value: /data/dictionary.db
+          volumeMounts:
+            - name: glossary-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+      volumes:
+        - name: glossary-data
+          persistentVolumeClaim:
+            claimName: glossary-data

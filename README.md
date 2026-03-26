@@ -173,3 +173,27 @@ uv run ruff format .
 # JavaScript (eslint)
 cd frontend && npm run lint
 ```
+
+## Staging Deploy (Woodpecker + k3s)
+
+The repository now includes a Woodpecker pipeline at `.woodpecker/deploy-staging.yml` that deploys to k3s namespace `glossary-staging` and exposes the app via Traefik at `staging.graphras.com`.
+
+Kubernetes manifests are in `k8s/staging/`:
+
+- `namespace.yaml`
+- `pvc.yaml` (persistent SQLite volume)
+- `deployment.yaml`
+- `service.yaml`
+- `ingress.yaml` (Traefik ingress for `staging.graphras.com`)
+
+### Required Woodpecker Secrets
+
+- `KUBECONFIG_B64` -- base64-encoded kubeconfig with access to the k3s cluster
+- `GHCR_USERNAME` -- GitHub username (or robot user) with pull access
+- `GHCR_TOKEN` -- GitHub token with `read:packages`
+
+The deployment uses image `ghcr.io/graphras-com/glossary:main`, then forces a rollout restart so k3s pulls the newest `main` image published by `.github/workflows/build-and-push.yml`.
+
+### TLS Note
+
+The ingress expects a TLS secret named `staging-graphras-com-tls` in namespace `glossary-staging`. If you use cert-manager, issue this secret from your ClusterIssuer; otherwise create it manually.
