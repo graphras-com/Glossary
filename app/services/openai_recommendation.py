@@ -24,6 +24,30 @@ async def recommend_definition(term: str, category_context: str | None = None) -
         "Both values must be concise plain-text definitions, 1-2 sentences each. "
         "Do not include markdown, lists, prefixes, or extra keys."
     )
+
+    system_prompt_alt = (
+        "You are a glossary writer for a telecom company. "
+        "Your job is to define one telecom-related term in two languages: "
+        "- English (`en`) "
+        "- Danish (`da`) "
+
+        "Instructions: "
+        "1. Read the input term. "
+        "2. Interpret it in a telecommunications context. "
+        "3. Write one short, clear definition in English. "
+        "4. Write one short, clear definition in Danish. "
+        "5. Make both definitions easy for non-experts to understand. "
+        "6. Keep each definition to one sentence. "
+        "7. Avoid jargon unless necessary. "
+        "8. Do not add notes, explanations, confidence statements, or alternative meanings. "
+        "9. Return YAML only. "
+
+        "Required YAML schema: "
+        "en: \"<definition in English>\" "
+        "da: \"<definition in Danish>\" "
+    )
+
+
     user_prompt = f"Term: {term}"
     if category_context:
         user_prompt += f"\nCategory context: {category_context}"
