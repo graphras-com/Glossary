@@ -4,7 +4,7 @@ on:
   workflow_call:
     secrets:
       GITLEAKS_LICENSE:
-        required: true
+        required: false
 
 jobs:
   scan:

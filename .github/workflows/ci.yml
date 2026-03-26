@@ -8,57 +8,170 @@ on:
     types: [published]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+env:
+  PYTHON_VERSION: ${{ vars.CI_PYTHON_VERSION || '3.12' }}
+  PYTHON_TEST_VERSIONS: ${{ vars.CI_PYTHON_TEST_VERSIONS || '["3.11","3.12","3.13"]' }}
+  PYTHON_INSTALL_SPEC: ${{ vars.CI_PYTHON_INSTALL_SPEC || '.[dev]' }}
+  PYTHON_COMPILE_FILES: ${{ vars.CI_PYTHON_COMPILE_FILES || '' }}
+  PYTHON_COVERAGE_TARGET: ${{ vars.CI_PYTHON_COVERAGE_TARGET || '' }}
+  PYTHON_COVERAGE_THRESHOLD: ${{ vars.CI_PYTHON_COVERAGE_THRESHOLD || '85' }}
+  FRONTEND_NODE_VERSION: ${{ vars.CI_FRONTEND_NODE_VERSION || '22' }}
+  FRONTEND_WORKDIR: ${{ vars.CI_FRONTEND_WORKDIR || 'frontend' }}
+
 jobs:
+  # ── Detect project layout ──────────────────────────────────────────
+  detect-stack:
+    name: Detect stack
+    runs-on: ubuntu-latest
+    outputs:
+      has-python: ${{ steps.detect.outputs.has-python }}
+      has-frontend: ${{ steps.detect.outputs.has-frontend }}
+      has-e2e: ${{ steps.detect.outputs.has-e2e }}
+      has-docker: ${{ steps.detect.outputs.has-docker }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Detect components
+        id: detect
+        run: |
+          has_python=false
+          has_frontend=false
+          has_e2e=false
+          has_docker=false
+
+          if [ -f pyproject.toml ] || [ -f setup.py ] || [ -f requirements.txt ]; then
+            has_python=true
+          fi
+
+          if [ -f "${{ env.FRONTEND_WORKDIR }}/package.json" ]; then
+            has_frontend=true
+          fi
+
+          if [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.ts" ] || [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.js" ] || [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.mjs" ] || [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.cjs" ]; then
+            has_e2e=true
+          fi
+
+          if [ -f Dockerfile ]; then
+            has_docker=true
+          fi
+
+          echo "has-python=${has_python}" >> "$GITHUB_OUTPUT"
+          echo "has-frontend=${has_frontend}" >> "$GITHUB_OUTPUT"
+          echo "has-e2e=${has_e2e}" >> "$GITHUB_OUTPUT"
+          echo "has-docker=${has_docker}" >> "$GITHUB_OUTPUT"
+
   # ── Python ────────────────────────────────────────────────────────
   py-lint:
     name: Python Lint
+    if: needs.detect-stack.outputs.has-python == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/python-lint.yml
+    with:
+      python-version: ${{ env.PYTHON_VERSION }}
+      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
 
   py-build:
     name: Python Build
+    if: needs.detect-stack.outputs.has-python == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/python-ci.yml
     with:
-      compile-files: "app/main.py"
+      python-version: ${{ env.PYTHON_VERSION }}
+      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
+      compile-files: ${{ env.PYTHON_COMPILE_FILES }}
 
   py-test:
     name: Python Test
+    if: needs.detect-stack.outputs.has-python == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/python-tests.yml
     with:
-      coverage-target: "app"
+      python-versions: ${{ env.PYTHON_TEST_VERSIONS }}
+      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
+      coverage-target: ${{ env.PYTHON_COVERAGE_TARGET }}
+      coverage-threshold: ${{ fromJSON(env.PYTHON_COVERAGE_THRESHOLD) }}
 
   # ── Frontend ──────────────────────────────────────────────────────
   fe-lint:
     name: Frontend Lint
-    needs: [fe-unit]
+    if: needs.detect-stack.outputs.has-frontend == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/frontend-lint.yml
+    with:
+      node-version: ${{ env.FRONTEND_NODE_VERSION }}
+      working-directory: ${{ env.FRONTEND_WORKDIR }}
 
   fe-build:
     name: Frontend Build
+    if: needs.detect-stack.outputs.has-frontend == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/frontend-build.yml
+    with:
+      node-version: ${{ env.FRONTEND_NODE_VERSION }}
+      working-directory: ${{ env.FRONTEND_WORKDIR }}
 
   fe-unit:
     name: Frontend Unit
+    if: needs.detect-stack.outputs.has-frontend == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/frontend-unit.yml
+    with:
+      node-version: ${{ env.FRONTEND_NODE_VERSION }}
+      working-directory: ${{ env.FRONTEND_WORKDIR }}
 
   fe-e2e:
     name: Frontend E2E
+    if: needs.detect-stack.outputs.has-frontend == 'true' && needs.detect-stack.outputs.has-e2e == 'true' && needs.detect-stack.outputs.has-python == 'true'
+    needs: [detect-stack]
     uses: ./.github/workflows/frontend-e2e.yml
+    with:
+      python-version: ${{ env.PYTHON_VERSION }}
+      node-version: ${{ env.FRONTEND_NODE_VERSION }}
+      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
+      working-directory: ${{ env.FRONTEND_WORKDIR }}
 
   # ── Security ──────────────────────────────────────────────────────
   secrets-scan:
     name: Secrets
+    needs: [detect-stack]
     uses: ./.github/workflows/python-gitleaks.yml
     secrets:
       GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
+  quality-gate:
+    name: Quality gate
+    if: always()
+    needs: [detect-stack, py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required job results
+        env:
+          PY_LINT: ${{ needs.py-lint.result }}
+          PY_BUILD: ${{ needs.py-build.result }}
+          PY_TEST: ${{ needs.py-test.result }}
+          FE_LINT: ${{ needs.fe-lint.result }}
+          FE_BUILD: ${{ needs.fe-build.result }}
+          FE_UNIT: ${{ needs.fe-unit.result }}
+          FE_E2E: ${{ needs.fe-e2e.result }}
+          SECRETS_SCAN: ${{ needs.secrets-scan.result }}
+        run: |
+          results=("$PY_LINT" "$PY_BUILD" "$PY_TEST" "$FE_LINT" "$FE_BUILD" "$FE_UNIT" "$FE_E2E" "$SECRETS_SCAN")
+          for result in "${results[@]}"; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              exit 1
+            fi
+          done
+
   docker-build:
     name: Docker Build
-    if: github.event_name == 'pull_request'
-    needs: [py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan]
+    if: github.event_name == 'pull_request' && needs.detect-stack.outputs.has-docker == 'true'
+    needs: [detect-stack, quality-gate]
     uses: ./.github/workflows/build-and-push.yml
     with:
       push-image: false
@@ -68,9 +181,11 @@ jobs:
   docker-push:
     name: Docker Push
     if: |
+      needs.detect-stack.outputs.has-docker == 'true' && (
       (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))) ||
       (github.event_name == 'release' && github.event.action == 'published')
-    needs: [py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan]
+      )
+    needs: [detect-stack, quality-gate]
     uses: ./.github/workflows/build-and-push.yml
     with:
       push-image: true
@@ -81,8 +196,8 @@ jobs:
   # ── Release ───────────────────────────────────────────────────────
   release:
     name: Release
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: [py-lint, py-build, py-test, fe-lint, fe-build, fe-unit, fe-e2e, secrets-scan, docker-push]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && (needs.docker-push.result == 'success' || needs.docker-push.result == 'skipped')
+    needs: [detect-stack, quality-gate, docker-push]
     uses: ./.github/workflows/python-release.yml
     permissions:
       contents: write
