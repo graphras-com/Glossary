@@ -112,6 +112,7 @@ The app is served at <http://localhost:8000>. The SQLite database is persisted i
 | `POST`   | `/terms/`                           | Create a term with definitions     |
 | `PATCH`  | `/terms/{id}`                       | Update a term name                 |
 | `DELETE` | `/terms/{id}`                       | Delete a term and its definitions  |
+| `POST`   | `/terms/recommend-definition`       | Generate EN/DA definition suggestion for one term |
 | `POST`   | `/terms/{id}/definitions`           | Add a definition to a term         |
 | `PATCH`  | `/terms/{id}/definitions/{def_id}`  | Update a definition                |
 | `DELETE` | `/terms/{id}/definitions/{def_id}`  | Delete a definition                |
@@ -138,6 +139,9 @@ A term can have multiple definitions, each belonging to a different category.
 | Variable        | Default                            | Description                |
 |-----------------|------------------------------------|----------------------------|
 | `DATABASE_PATH` | `./dictionary.db` (local), `/data/dictionary.db` (Docker) | Path to SQLite database |
+| `OPENAI_API_KEY` | *(none)* | OpenAI API key used by backend definition recommendations |
+| `OPENAI_RECOMMENDATION_MODEL` | `gpt-4.1-mini` | Model used for definition recommendations |
+| `OPENAI_API_URL` | `https://api.openai.com/v1/chat/completions` | OpenAI API endpoint override |
 
 ## Testing
 

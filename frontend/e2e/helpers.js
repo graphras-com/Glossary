@@ -184,6 +184,20 @@ export async function mockApi(page) {
       return route.fallback();
     }
 
+    if (pathname === "/terms/recommend-definition") {
+      if (method === "POST") {
+        const body = route.request().postDataJSON();
+        return route.fulfill({
+          json: {
+            en: `A concise definition for ${body.term}.`,
+            da: `En kort definition af ${body.term}.`,
+            model: "gpt-4.1-mini",
+          },
+        });
+      }
+      return route.fallback();
+    }
+
     // ── Term definitions: /terms/{id}/definitions or /terms/{id}/definitions/{defId} ──
     const defDetailMatch = pathname.match(
       /^\/terms\/(\d+)\/definitions\/(\d+)$/

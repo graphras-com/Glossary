@@ -81,6 +81,33 @@ test.describe("Glossary (Terms list)", () => {
     await expect(page).toHaveURL(/\/terms$/);
   });
 
+  test("recommends English and Danish definitions on create term", async ({ page }) => {
+    await page.goto("/terms/new");
+    await page.fill("#term-name", "SIM");
+    await page.locator("#definition-category-0").selectOption({ label: "Network" });
+
+    await page.click('button:has-text("Recommend definition")');
+
+    await expect(page.locator("#definition-en-0")).toHaveValue(
+      "A concise definition for SIM."
+    );
+    await expect(page.locator("#definition-da-0")).toHaveValue(
+      "En kort definition af SIM."
+    );
+  });
+
+  test("shows an error if recommendation fails", async ({ page }) => {
+    await page.route("**/terms/recommend-definition", (route) =>
+      route.fulfill({ status: 503, json: { detail: "AI provider unavailable" } })
+    );
+
+    await page.goto("/terms/new");
+    await page.fill("#term-name", "SIM");
+    await page.click('button:has-text("Recommend definition")');
+
+    await expect(page.locator(".error-message")).toContainText("AI provider unavailable");
+  });
+
   test("edits a term name", async ({ page }) => {
     await page.goto("/terms");
 

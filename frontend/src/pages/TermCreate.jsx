@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createTerm } from "../api/client";
+import { createTerm, recommendDefinition } from "../api/client";
 import ErrorMessage from "../components/ErrorMessage";
 import useCategoryMap from "../hooks/useCategoryMap";
 
@@ -13,6 +13,7 @@ export default function TermCreate() {
   ]);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [generatingByIndex, setGeneratingByIndex] = useState({});
 
   function addDefinition() {
     setDefinitions([...definitions, { en: "", da: "", category_id: "" }]);
@@ -27,6 +28,33 @@ export default function TermCreate() {
     setDefinitions(
       definitions.map((d, i) => (i === index ? { ...d, [field]: value } : d))
     );
+  }
+
+  async function handleRecommend(index) {
+    const trimmedTerm = termName.trim();
+    if (!trimmedTerm) {
+      setError("Enter a term first to recommend a definition.");
+      return;
+    }
+
+    setError("");
+    setGeneratingByIndex((state) => ({ ...state, [index]: true }));
+
+    try {
+      const suggestion = await recommendDefinition({
+        term: trimmedTerm,
+        category_id: definitions[index].category_id || undefined,
+      });
+      setDefinitions((current) =>
+        current.map((d, i) =>
+          i === index ? { ...d, en: suggestion.en, da: suggestion.da } : d
+        )
+      );
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setGeneratingByIndex((state) => ({ ...state, [index]: false }));
+    }
   }
 
   async function handleSubmit(e) {
@@ -124,6 +152,16 @@ export default function TermCreate() {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="form-group">
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => handleRecommend(i)}
+                  disabled={Boolean(generatingByIndex[i])}
+                >
+                  {generatingByIndex[i] ? "Generating..." : "Recommend definition"}
+                </button>
               </div>
             </div>
           </div>
