@@ -13,9 +13,9 @@ steps:
         from_secret: GHCR_USERNAME
       GHCR_TOKEN:
         from_secret: GHCR_TOKEN
+      KUBECONFIG: /tmp/kubeconfig
     commands:
-      - mkdir -p /root/.kube
-      - printf '%s' "$KUBECONFIG_B64" | base64 -d > /root/.kube/config
+      - printf '%s' "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG"
       - kubectl apply -f k8s/staging/namespace.yaml
       - kubectl -n glossary-staging create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
       - kubectl apply -f k8s/staging/pvc.yaml
