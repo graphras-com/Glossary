@@ -8,18 +8,60 @@ from app.models import CategoryModel, DefinitionModel, TermModel
 from app.schemas import (
     DefinitionCreate,
     DefinitionRead,
+    DefinitionRecommendRequest,
+    DefinitionRecommendResponse,
     DefinitionUpdate,
     TermCreate,
     TermRead,
     TermUpdate,
 )
+from app.services.openai_recommendation import (
+    RecommendationServiceError,
+    recommend_definition,
+)
 
 router = APIRouter(prefix="/terms", tags=["terms"])
+
+
+async def _category_breadcrumb(category: CategoryModel, db: AsyncSession) -> str:
+    labels = [category.label]
+    current = category
+    while current.parent_id:
+        parent = await db.get(CategoryModel, current.parent_id)
+        if not parent:
+            break
+        labels.append(parent.label)
+        current = parent
+    labels.reverse()
+    return " > ".join(labels)
 
 
 # ---------------------------------------------------------------------------
 # Terms
 # ---------------------------------------------------------------------------
+
+
+@router.post("/recommend-definition", response_model=DefinitionRecommendResponse)
+async def recommend_term_definition(
+    body: DefinitionRecommendRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    category_context = None
+    if body.category_id:
+        category = await db.get(CategoryModel, body.category_id)
+        if not category:
+            raise HTTPException(422, detail=f"Category '{body.category_id}' not found")
+        category_context = await _category_breadcrumb(category, db)
+
+    try:
+        suggestion = await recommend_definition(
+            term=body.term,
+            category_context=category_context,
+        )
+    except RecommendationServiceError as exc:
+        raise HTTPException(503, detail=str(exc)) from exc
+
+    return DefinitionRecommendResponse(**suggestion)
 
 
 @router.get("/", response_model=list[TermRead])

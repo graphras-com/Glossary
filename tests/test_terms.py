@@ -1,6 +1,8 @@
 import pytest
 from httpx import AsyncClient
 
+from app.services.openai_recommendation import RecommendationServiceError
+
 # =========================================================================
 # LIST
 # =========================================================================
@@ -296,6 +298,69 @@ async def test_create_term_empty_en_422(client: AsyncClient, seed_categories):
 @pytest.mark.asyncio
 async def test_create_term_missing_fields_422(client: AsyncClient):
     r = await client.post("/terms/", json={"term": "NoDefsKey"})
+    assert r.status_code == 422
+
+
+# =========================================================================
+# RECOMMEND DEFINITION
+# =========================================================================
+
+
+@pytest.mark.asyncio
+async def test_recommend_definition(client: AsyncClient, seed_categories, monkeypatch):
+    async def fake_recommend(term: str, category_context: str | None = None):
+        assert term == "SIM"
+        assert category_context == "Network > Mobile"
+        return {
+            "en": "A secure chip that identifies a mobile subscriber.",
+            "da": "En sikker chip, der identificerer en mobilabonnent.",
+            "model": "gpt-4.1-mini",
+        }
+
+    monkeypatch.setattr("app.routers.terms.recommend_definition", fake_recommend)
+
+    r = await client.post(
+        "/terms/recommend-definition",
+        json={"term": "SIM", "category_id": "network.mobile"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["en"] == "A secure chip that identifies a mobile subscriber."
+    assert body["da"] == "En sikker chip, der identificerer en mobilabonnent."
+    assert body["model"] == "gpt-4.1-mini"
+
+
+@pytest.mark.asyncio
+async def test_recommend_definition_invalid_category_422(
+    client: AsyncClient, seed_categories
+):
+    r = await client.post(
+        "/terms/recommend-definition",
+        json={"term": "SIM", "category_id": "missing"},
+    )
+    assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_recommend_definition_provider_error_503(
+    client: AsyncClient, monkeypatch
+):
+    async def fake_recommend(term: str, category_context: str | None = None):
+        raise RecommendationServiceError("AI provider returned an error")
+
+    monkeypatch.setattr("app.routers.terms.recommend_definition", fake_recommend)
+
+    r = await client.post(
+        "/terms/recommend-definition",
+        json={"term": "SIM"},
+    )
+    assert r.status_code == 503
+    assert r.json()["detail"] == "AI provider returned an error"
+
+
+@pytest.mark.asyncio
+async def test_recommend_definition_empty_term_422(client: AsyncClient):
+    r = await client.post("/terms/recommend-definition", json={"term": ""})
     assert r.status_code == 422
 
 

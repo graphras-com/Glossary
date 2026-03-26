@@ -50,6 +50,17 @@ class DefinitionUpdate(BaseModel):
     category_id: str | None = Field(None, min_length=1)
 
 
+class DefinitionRecommendRequest(BaseModel):
+    term: str = Field(..., min_length=1)
+    category_id: str | None = Field(None, min_length=1)
+
+
+class DefinitionRecommendResponse(BaseModel):
+    en: str
+    da: str
+    model: str
+
+
 # ---------------------------------------------------------------------------
 # Term
 # ---------------------------------------------------------------------------

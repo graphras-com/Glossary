@@ -69,6 +69,13 @@ export function createTerm(data) {
   });
 }
 
+export function recommendDefinition(data) {
+  return request("/terms/recommend-definition", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export function updateTerm(id, data) {
   return request(`/terms/${id}`, {
     method: "PATCH",
