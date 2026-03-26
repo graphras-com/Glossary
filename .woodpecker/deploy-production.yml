@@ -21,7 +21,7 @@ steps:
       - kubectl -n glossary-production create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
       - kubectl apply -f k8s/production/pvc.yaml
       - kubectl apply -f k8s/production/deployment.yaml
-      - kubectl -n glossary-production set image deployment/glossary glossary=ghcr.io/graphras-com/glossary:${CI_COMMIT_TAG}
+      - "kubectl -n glossary-production set image deployment/glossary glossary=ghcr.io/graphras-com/glossary:$CI_COMMIT_TAG"
       - kubectl apply -f k8s/production/service.yaml
       - kubectl apply -f k8s/production/ingress.yaml
       - kubectl -n glossary-production rollout status deployment/glossary --timeout=180s
