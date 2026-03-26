@@ -1,11 +1,10 @@
-when:
-  - event: [push, manual]
-    branch: [main]
-
 steps:
   deploy-staging:
     image: bitnami/kubectl:latest
     pull: true
+    when:
+      - event: [push, manual]
+        branch: [main]
     environment:
       KUBECONFIG_B64:
         from_secret: KUBECONFIG_B64

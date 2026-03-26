@@ -1,0 +1,27 @@
+steps:
+  deploy-production:
+    image: bitnami/kubectl:latest
+    pull: true
+    when:
+      - event: [tag]
+    environment:
+      KUBECONFIG_B64:
+        from_secret: KUBECONFIG_B64
+      GHCR_USERNAME:
+        from_secret: GHCR_USERNAME
+      GHCR_TOKEN:
+        from_secret: GHCR_TOKEN
+      K8S_API_SERVER:
+        from_secret: K8S_API_SERVER
+      KUBECONFIG: /tmp/kubeconfig
+    commands:
+      - printf '%s' "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG"
+      - if [ -n "$K8S_API_SERVER" ]; then sed -i "s#https://127.0.0.1:6443#$K8S_API_SERVER#g" "$KUBECONFIG"; fi
+      - kubectl apply -f k8s/production/namespace.yaml
+      - kubectl -n glossary-production create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
+      - kubectl apply -f k8s/production/pvc.yaml
+      - kubectl apply -f k8s/production/deployment.yaml
+      - kubectl -n glossary-production set image deployment/glossary glossary=ghcr.io/graphras-com/glossary:${CI_COMMIT_TAG}
+      - kubectl apply -f k8s/production/service.yaml
+      - kubectl apply -f k8s/production/ingress.yaml
+      - kubectl -n glossary-production rollout status deployment/glossary --timeout=180s

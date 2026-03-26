@@ -174,17 +174,22 @@ uv run ruff format .
 cd frontend && npm run lint
 ```
 
-## Staging Deploy (Woodpecker + k3s)
+## k3s Deploy (Woodpecker + Traefik)
 
-The repository now includes a Woodpecker pipeline at `.woodpecker/deploy-staging.yml` that deploys to k3s namespace `glossary-staging` and exposes the app via Traefik at `staging.graphras.com`.
+The repository includes two Woodpecker pipeline files:
 
-Kubernetes manifests are in `k8s/staging/`:
+- `.woodpecker/deploy-staging.yml` for staging
+- `.woodpecker/deploy-production.yml` for production releases
 
-- `namespace.yaml`
-- `pvc.yaml` (persistent SQLite volume)
-- `deployment.yaml`
-- `service.yaml`
-- `ingress.yaml` (Traefik ingress for `staging.graphras.com`)
+- `main` branch push/manual deploys to namespace `glossary-staging` at `staging-glossary.graphras.com`
+- tag builds (release tags) deploy to namespace `glossary-production` at `glossary.graphras.com`
+
+If your Woodpecker repo is configured with a single custom config path, make sure both pipeline files are loaded (or update the config setting accordingly).
+
+Kubernetes manifests are split by environment:
+
+- `k8s/staging/` for staging
+- `k8s/production/` for production
 
 ### Required Woodpecker Secrets
 
@@ -192,8 +197,16 @@ Kubernetes manifests are in `k8s/staging/`:
 - `GHCR_USERNAME` -- GitHub username (or robot user) with pull access
 - `GHCR_TOKEN` -- GitHub token with `read:packages`
 
-The deployment uses image `ghcr.io/graphras-com/glossary:main`, then forces a rollout restart so k3s pulls the newest `main` image published by `.github/workflows/build-and-push.yml`.
+Image behavior:
+
+- Staging deploys `ghcr.io/graphras-com/glossary:main` and forces a rollout restart.
+- Production deploys tag image `ghcr.io/graphras-com/glossary:${CI_COMMIT_TAG}`.
 
 ### TLS Note
 
-The ingress expects a TLS secret named `staging-graphras-com-tls` in namespace `glossary-staging`. If you use cert-manager, issue this secret from your ClusterIssuer; otherwise create it manually.
+Ingress expects these TLS secrets:
+
+- `staging-glossary-graphras-com-tls` in namespace `glossary-staging`
+- `glossary-graphras-com-tls` in namespace `glossary-production`
+
+If you use cert-manager, issue these secrets from your ClusterIssuer; otherwise create them manually.
