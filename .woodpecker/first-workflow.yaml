@@ -1,6 +1,0 @@
-steps:
-  test:
-    image: ghcr.io/astral-sh/uv:python3.12-alpine
-    commands:
-      - uv sync --locked
-      - uv run pytest
