@@ -1,3 +1,5 @@
+[![status-badge](https://ci.graphras.com/api/badges/1/status.svg?events=push%2Ctag%2Crelease%2Cpull_request%2Cdeployment%2Cmanual)](https://ci.graphras.com/repos/1)
+
 # Glossary
 
 A full-stack bilingual telecom glossary application for browsing, searching, and managing telecommunications terminology with English and Danish definitions, organized into hierarchical categories.
