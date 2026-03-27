@@ -49,11 +49,11 @@ jobs:
             has_python=true
           fi
 
-          if [ -f "${{ env.FRONTEND_WORKDIR }}/package.json" ]; then
+          if [ -f "${FRONTEND_WORKDIR}/package.json" ]; then
             has_frontend=true
           fi
 
-          if [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.ts" ] || [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.js" ] || [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.mjs" ] || [ -f "${{ env.FRONTEND_WORKDIR }}/playwright.config.cjs" ]; then
+          if [ -f "${FRONTEND_WORKDIR}/playwright.config.ts" ] || [ -f "${FRONTEND_WORKDIR}/playwright.config.js" ] || [ -f "${FRONTEND_WORKDIR}/playwright.config.mjs" ] || [ -f "${FRONTEND_WORKDIR}/playwright.config.cjs" ]; then
             has_e2e=true
           fi
 
@@ -73,8 +73,8 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/python-lint.yml
     with:
-      python-version: ${{ env.PYTHON_VERSION }}
-      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
+      python-version: ${{ vars.CI_PYTHON_VERSION || '3.12' }}
+      install-spec: ${{ vars.CI_PYTHON_INSTALL_SPEC || '.[dev]' }}
 
   py-build:
     name: Python Build
@@ -82,9 +82,9 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/python-ci.yml
     with:
-      python-version: ${{ env.PYTHON_VERSION }}
-      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
-      compile-files: ${{ env.PYTHON_COMPILE_FILES }}
+      python-version: ${{ vars.CI_PYTHON_VERSION || '3.12' }}
+      install-spec: ${{ vars.CI_PYTHON_INSTALL_SPEC || '.[dev]' }}
+      compile-files: ${{ vars.CI_PYTHON_COMPILE_FILES || '' }}
 
   py-test:
     name: Python Test
@@ -92,10 +92,10 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/python-tests.yml
     with:
-      python-versions: ${{ env.PYTHON_TEST_VERSIONS }}
-      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
-      coverage-target: ${{ env.PYTHON_COVERAGE_TARGET }}
-      coverage-threshold: ${{ fromJSON(env.PYTHON_COVERAGE_THRESHOLD) }}
+      python-versions: ${{ vars.CI_PYTHON_TEST_VERSIONS || '["3.11","3.12","3.13"]' }}
+      install-spec: ${{ vars.CI_PYTHON_INSTALL_SPEC || '.[dev]' }}
+      coverage-target: ${{ vars.CI_PYTHON_COVERAGE_TARGET || '' }}
+      coverage-threshold: ${{ fromJSON(vars.CI_PYTHON_COVERAGE_THRESHOLD || '85') }}
 
   # ── Frontend ──────────────────────────────────────────────────────
   fe-lint:
@@ -104,8 +104,8 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/frontend-lint.yml
     with:
-      node-version: ${{ env.FRONTEND_NODE_VERSION }}
-      working-directory: ${{ env.FRONTEND_WORKDIR }}
+      node-version: ${{ vars.CI_FRONTEND_NODE_VERSION || '22' }}
+      working-directory: ${{ vars.CI_FRONTEND_WORKDIR || 'frontend' }}
 
   fe-build:
     name: Frontend Build
@@ -113,8 +113,8 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/frontend-build.yml
     with:
-      node-version: ${{ env.FRONTEND_NODE_VERSION }}
-      working-directory: ${{ env.FRONTEND_WORKDIR }}
+      node-version: ${{ vars.CI_FRONTEND_NODE_VERSION || '22' }}
+      working-directory: ${{ vars.CI_FRONTEND_WORKDIR || 'frontend' }}
 
   fe-unit:
     name: Frontend Unit
@@ -122,8 +122,8 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/frontend-unit.yml
     with:
-      node-version: ${{ env.FRONTEND_NODE_VERSION }}
-      working-directory: ${{ env.FRONTEND_WORKDIR }}
+      node-version: ${{ vars.CI_FRONTEND_NODE_VERSION || '22' }}
+      working-directory: ${{ vars.CI_FRONTEND_WORKDIR || 'frontend' }}
 
   fe-e2e:
     name: Frontend E2E
@@ -131,10 +131,10 @@ jobs:
     needs: [detect-stack]
     uses: ./.github/workflows/frontend-e2e.yml
     with:
-      python-version: ${{ env.PYTHON_VERSION }}
-      node-version: ${{ env.FRONTEND_NODE_VERSION }}
-      install-spec: ${{ env.PYTHON_INSTALL_SPEC }}
-      working-directory: ${{ env.FRONTEND_WORKDIR }}
+      python-version: ${{ vars.CI_PYTHON_VERSION || '3.12' }}
+      node-version: ${{ vars.CI_FRONTEND_NODE_VERSION || '22' }}
+      install-spec: ${{ vars.CI_PYTHON_INSTALL_SPEC || '.[dev]' }}
+      working-directory: ${{ vars.CI_FRONTEND_WORKDIR || 'frontend' }}
 
   # ── Security ──────────────────────────────────────────────────────
   secrets-scan:
