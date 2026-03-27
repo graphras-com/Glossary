@@ -51,7 +51,7 @@ steps:
         NAMESPACE="${ORG_NS}-staging"
         HOST="staging-${APP_NAME}.${ORG_DNS}"
         TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
-        IMAGE_TAG="${CI_COMMIT_BRANCH:-main}"
+        IMAGE_TAG="staging"
 
         render_apply() {
           file="$1"

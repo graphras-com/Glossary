@@ -65,6 +65,8 @@ The Woodpecker deploy pipelines in `.woodpecker/deploy-staging.yml` and `.woodpe
 - Container image: `ghcr.io/<org-ghcr>/<app-name>:<tag>`
 - Staging host: `staging-<app-name>.<org-dns>`
 - Production host: `<app-name>.<org-dns>`
+- Staging deploy image tag: `staging` (published by GitHub Actions on `main` pushes)
+- Production deploy image tag: release tag from CI (`CI_COMMIT_TAG`)
 
 Optional Woodpecker environment overrides:
 
