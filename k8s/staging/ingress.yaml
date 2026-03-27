@@ -1,25 +1,25 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: glossary
-  namespace: glossary-staging
+  name: __APP_NAME__
+  namespace: __NAMESPACE__
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
   ingressClassName: traefik
   rules:
-    - host: staging-glossary.graphras.com
+    - host: __HOST__
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: glossary
+                name: __APP_NAME__
                 port:
                   number: 80
   tls:
     - hosts:
-        - staging-glossary.graphras.com
-      secretName: staging-glossary-graphras-com-tls
+        - __HOST__
+      secretName: __TLS_SECRET__

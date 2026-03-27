@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: glossary
-  namespace: glossary-production
+  name: __APP_NAME__
+  namespace: __NAMESPACE__
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: glossary
+      app: __APP_NAME__
   template:
     metadata:
       labels:
-        app: glossary
+        app: __APP_NAME__
     spec:
       imagePullSecrets:
         - name: ghcr-creds
       containers:
-        - name: glossary
-          image: ghcr.io/graphras-com/glossary:main
+        - name: __APP_NAME__
+          image: ghcr.io/__ORG_GHCR__/__APP_NAME__:__IMAGE_TAG__
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -25,7 +25,7 @@ spec:
             - name: DATABASE_PATH
               value: /data/dictionary.db
           volumeMounts:
-            - name: glossary-data
+            - name: __APP_NAME__-data
               mountPath: /data
           readinessProbe:
             httpGet:
@@ -47,6 +47,6 @@ spec:
               cpu: 500m
               memory: 512Mi
       volumes:
-        - name: glossary-data
+        - name: __APP_NAME__-data
           persistentVolumeClaim:
-            claimName: glossary-data
+            claimName: __APP_NAME__-data

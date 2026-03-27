@@ -55,3 +55,22 @@ The CI workflow detects project components and only runs relevant jobs:
    - Python package config at root.
    - Frontend at `frontend/` (or override with `CI_FRONTEND_WORKDIR`).
    - `Dockerfile` at root for Docker jobs.
+
+## Woodpecker deploy templates
+
+The Woodpecker deploy pipelines in `.woodpecker/deploy-staging.yml` and `.woodpecker/deploy-production.yml` are template-ready and derive naming from repo/org by default.
+
+- Staging namespace: `<org-prefix>-staging` (example: `graphras-staging`)
+- Production namespace: `<org-prefix>-prod` (example: `graphras-prod`)
+- Container image: `ghcr.io/<org-ghcr>/<app-name>:<tag>`
+- Staging host: `staging-<app-name>.<org-dns>`
+- Production host: `<app-name>.<org-dns>`
+
+Optional Woodpecker environment overrides:
+
+- `APP_NAME` (default: repository name)
+- `ORG_GHCR` (default: GitHub org slug from CI, e.g. `graphras-com`)
+- `ORG_DNS` (default heuristic from `ORG_GHCR`, e.g. `graphras.com`)
+- `ORG_NS` (default: `ORG_GHCR` stripped of common TLD suffixes, e.g. `graphras`)
+
+This split handles GitHub org slug vs DNS domain naming (for example `graphras-com` -> `graphras.com`).

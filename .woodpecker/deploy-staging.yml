@@ -16,13 +16,60 @@ steps:
         from_secret: K8S_API_SERVER
       KUBECONFIG: /tmp/kubeconfig
     commands:
-      - printf '%s' "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG"
-      - if [ -n "$K8S_API_SERVER" ]; then sed -i "s#https://127.0.0.1:6443#$K8S_API_SERVER#g" "$KUBECONFIG"; fi
-      - kubectl apply -f k8s/staging/namespace.yaml
-      - kubectl -n glossary-staging create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
-      - kubectl apply -f k8s/staging/pvc.yaml
-      - kubectl apply -f k8s/staging/deployment.yaml
-      - kubectl apply -f k8s/staging/service.yaml
-      - kubectl apply -f k8s/staging/ingress.yaml
-      - kubectl -n glossary-staging rollout restart deployment/glossary
-      - kubectl -n glossary-staging rollout status deployment/glossary --timeout=180s
+      - |
+        set -eu
+        printf '%s' "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG"
+        if [ -n "${K8S_API_SERVER:-}" ]; then
+          sed -i "s#https://127.0.0.1:6443#$K8S_API_SERVER#g" "$KUBECONFIG"
+        fi
+
+        APP_NAME="${APP_NAME:-${CI_REPO_NAME:-${CI_REPO##*/}}}"
+        APP_NAME="$(printf '%s' "$APP_NAME" | tr '[:upper:]' '[:lower:]' | tr '._' '-')"
+
+        ORG_GHCR="${ORG_GHCR:-${CI_REPO_OWNER:-}}"
+        if [ -z "$ORG_GHCR" ]; then
+          ORG_GHCR="$(printf '%s' "${CI_REPO:-}" | cut -d/ -f1)"
+        fi
+
+        ORG_DNS="${ORG_DNS:-}"
+        if [ -z "$ORG_DNS" ]; then
+          case "$ORG_GHCR" in
+            *-com) ORG_DNS="${ORG_GHCR%-com}.com" ;;
+            *-org) ORG_DNS="${ORG_GHCR%-org}.org" ;;
+            *-net) ORG_DNS="${ORG_GHCR%-net}.net" ;;
+            *) ORG_DNS="$ORG_GHCR" ;;
+          esac
+        fi
+
+        ORG_NS="${ORG_NS:-$ORG_GHCR}"
+        case "$ORG_NS" in
+          *-com) ORG_NS="${ORG_NS%-com}" ;;
+          *-org) ORG_NS="${ORG_NS%-org}" ;;
+          *-net) ORG_NS="${ORG_NS%-net}" ;;
+        esac
+
+        NAMESPACE="${ORG_NS}-staging"
+        HOST="staging-${APP_NAME}.${ORG_DNS}"
+        TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
+        IMAGE_TAG="${CI_COMMIT_BRANCH:-main}"
+
+        render_apply() {
+          file="$1"
+          sed \
+            -e "s#__APP_NAME__#${APP_NAME}#g" \
+            -e "s#__NAMESPACE__#${NAMESPACE}#g" \
+            -e "s#__ORG_GHCR__#${ORG_GHCR}#g" \
+            -e "s#__IMAGE_TAG__#${IMAGE_TAG}#g" \
+            -e "s#__HOST__#${HOST}#g" \
+            -e "s#__TLS_SECRET__#${TLS_SECRET}#g" \
+            "$file" | kubectl apply -f -
+        }
+
+        render_apply k8s/staging/namespace.yaml
+        kubectl -n "$NAMESPACE" create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
+        render_apply k8s/staging/pvc.yaml
+        render_apply k8s/staging/deployment.yaml
+        render_apply k8s/staging/service.yaml
+        render_apply k8s/staging/ingress.yaml
+        kubectl -n "$NAMESPACE" rollout restart deployment/"$APP_NAME"
+        kubectl -n "$NAMESPACE" rollout status deployment/"$APP_NAME" --timeout=180s

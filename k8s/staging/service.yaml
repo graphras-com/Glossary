@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: glossary
-  namespace: glossary-staging
+  name: __APP_NAME__
+  namespace: __NAMESPACE__
 spec:
   selector:
-    app: glossary
+    app: __APP_NAME__
   ports:
     - name: http
       port: 80
