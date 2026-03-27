@@ -237,12 +237,7 @@ jobs:
                 lookup_status="$(printf '%s' "$lookup_response" | tail -n1)"
 
                 if [ "$lookup_status" = "200" ] && [ -n "$lookup_body" ]; then
-                  found_repo_id="$(RESPONSE="$lookup_body" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip();
-try:
-    data=json.loads(raw)
-    print(data.get("id", ""))
-except Exception:
-    print("")')"
+                  found_repo_id="$(RESPONSE="$lookup_body" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip(); print((json.loads(raw).get("id", "") if raw else "")) if (raw and raw[:1] in "[{\"") else print("")')"
                   if [ -n "$found_repo_id" ]; then
                     repo_id="$found_repo_id"
                     api_base="$base"
@@ -298,14 +293,7 @@ except Exception:
               ;;
           esac
 
-          pipeline_number="$(RESPONSE="$trigger_response" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip();
-if not raw:
-    print("")
-else:
-    try:
-        print(json.loads(raw).get("number", ""))
-    except Exception:
-        print("")')"
+          pipeline_number="$(RESPONSE="$trigger_response" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip(); print(json.loads(raw).get("number", "") if (raw and raw[:1] in "[{\"") else "")')"
 
           echo "Triggered Woodpecker staging pipeline ${pipeline_number} for ${repo_full}"
 
