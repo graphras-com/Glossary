@@ -28,6 +28,16 @@ Set any of these optional variables:
 
 - `GITLEAKS_LICENSE` is optional. If not set, the gitleaks step still runs with default behavior.
 
+## Required GitHub secrets for staging deploy trigger
+
+To trigger Woodpecker staging deploy only after image push succeeds, set these GitHub Actions secrets:
+
+- `WOODPECKER_SERVER` (example: `https://ci.example.com`)
+- `WOODPECKER_TOKEN` (Woodpecker PAT)
+- `WOODPECKER_REPO` (optional override, default is GitHub `owner/repo`)
+
+If `WOODPECKER_SERVER` or `WOODPECKER_TOKEN` is not set, the GitHub trigger job is skipped.
+
 ## Auto-detection behavior
 
 The CI workflow detects project components and only runs relevant jobs:
@@ -67,6 +77,12 @@ The Woodpecker deploy pipelines in `.woodpecker/deploy-staging.yml` and `.woodpe
 - Production host: `<app-name>.<org-dns>`
 - Staging deploy image tag: `staging` (published by GitHub Actions on `main` pushes)
 - Production deploy image tag: release tag from CI (`CI_COMMIT_TAG`)
+
+Trigger behavior:
+
+- Staging deploy workflow runs on manual/API trigger only.
+- GitHub Actions triggers staging after `docker-push` succeeds on `main`.
+- This avoids race conditions between forge push events and image publication timing.
 
 Optional Woodpecker environment overrides:
 

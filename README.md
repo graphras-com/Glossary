@@ -185,8 +185,14 @@ The repository includes two Woodpecker pipeline files:
 - `.woodpecker/deploy-staging.yml` for staging
 - `.woodpecker/deploy-production.yml` for production releases
 
-- `main` branch push/manual deploys to namespace `glossary-staging` at `staging-glossary.graphras.com`
-- tag builds (release tags) deploy to namespace `glossary-production` at `glossary.graphras.com`
+- staging deploys to namespace `<org-prefix>-staging` at `staging-<app>.<org-domain>`
+- tag builds (release tags) deploy to namespace `<org-prefix>-prod` at `<app>.<org-domain>`
+
+Staging trigger model:
+
+- GitHub Actions builds and pushes images on `main`.
+- After `docker-push` succeeds, GitHub triggers Woodpecker via API.
+- Woodpecker staging workflow is manual/API-triggered (not push-triggered) to avoid race conditions.
 
 If your Woodpecker repo is configured with a single custom config path, make sure both pipeline files are loaded (or update the config setting accordingly).
 
@@ -203,14 +209,22 @@ Kubernetes manifests are split by environment:
 
 Image behavior:
 
-- Staging deploys `ghcr.io/graphras-com/glossary:main` and forces a rollout restart.
-- Production deploys tag image `ghcr.io/graphras-com/glossary:${CI_COMMIT_TAG}`.
+- Staging deploys `ghcr.io/<org-ghcr>/<app>:staging` and forces a rollout restart.
+- Production deploys tag image `ghcr.io/<org-ghcr>/<app>:${CI_COMMIT_TAG}`.
+
+Required GitHub Actions secrets for staging trigger:
+
+- `WOODPECKER_SERVER` -- base URL of your Woodpecker server
+- `WOODPECKER_TOKEN` -- Woodpecker PAT with pipeline trigger access
+- `WOODPECKER_REPO` -- optional repo override (`owner/repo`), defaults to current GitHub repo
+
+If `WOODPECKER_SERVER` or `WOODPECKER_TOKEN` is missing, the trigger job is skipped.
 
 ### TLS Note
 
-Ingress expects these TLS secrets:
+Ingress expects TLS secret naming generated from hostnames:
 
-- `staging-glossary-graphras-com-tls` in namespace `glossary-staging`
-- `glossary-graphras-com-tls` in namespace `glossary-production`
+- staging: `staging-<app>-<org-domain-with-dashes>-tls`
+- production: `<app>-<org-domain-with-dashes>-tls`
 
 If you use cert-manager, issue these secrets from your ClusterIssuer; otherwise create them manually.

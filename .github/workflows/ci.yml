@@ -193,6 +193,76 @@ jobs:
       contents: read
       packages: write
 
+  trigger-staging-deploy:
+    name: Trigger Staging Deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.docker-push.result == 'success' && secrets.WOODPECKER_SERVER != '' && secrets.WOODPECKER_TOKEN != ''
+    needs: [detect-stack, quality-gate, docker-push]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Trigger Woodpecker pipeline
+        env:
+          WOODPECKER_SERVER: ${{ secrets.WOODPECKER_SERVER }}
+          WOODPECKER_TOKEN: ${{ secrets.WOODPECKER_TOKEN }}
+          WOODPECKER_REPO: ${{ secrets.WOODPECKER_REPO }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+
+          server="${WOODPECKER_SERVER%/}"
+          repo_full="${WOODPECKER_REPO:-$GITHUB_REPOSITORY}"
+
+          repo_json="$(REPO_FULL="$repo_full" python3 - <<'PY'
+import os
+import urllib.parse
+print(urllib.parse.quote(os.environ["REPO_FULL"], safe=""))
+PY
+)"
+
+          repo_lookup_response="$(curl -fsSL --retry 3 --retry-delay 2 \
+            -H "Authorization: Bearer $WOODPECKER_TOKEN" \
+            "$server/repos/lookup/$repo_json")"
+
+          repo_id="$(RESPONSE="$repo_lookup_response" python3 - <<'PY'
+import json
+import os
+data = json.loads(os.environ["RESPONSE"])
+print(data["id"])
+PY
+)"
+
+          payload="$(GITHUB_SHA="$GITHUB_SHA" python3 - <<'PY'
+import json
+import os
+print(json.dumps({
+  "branch": "main",
+  "variables": {
+    "IMAGE_TAG": "staging",
+    "SOURCE_COMMIT_SHA": os.environ["GITHUB_SHA"]
+  }
+}))
+PY
+)"
+
+          trigger_response="$(curl -fsSL --retry 3 --retry-delay 2 \
+            -X POST \
+            -H "Authorization: Bearer $WOODPECKER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$server/repos/$repo_id/pipelines")"
+
+          pipeline_number="$(RESPONSE="$trigger_response" python3 - <<'PY'
+import json
+import os
+data = json.loads(os.environ["RESPONSE"])
+print(data.get("number", ""))
+PY
+)"
+
+          echo "Triggered Woodpecker staging pipeline ${pipeline_number} for ${repo_full}"
+
   # ── Release ───────────────────────────────────────────────────────
   release:
     name: Release

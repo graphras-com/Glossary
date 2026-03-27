@@ -3,7 +3,7 @@ steps:
     image: bitnami/kubectl:latest
     pull: true
     when:
-      - event: [push, manual]
+      - event: [manual]
         branch: [main]
     environment:
       KUBECONFIG_B64:
