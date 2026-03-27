@@ -35,6 +35,7 @@ To trigger Woodpecker staging deploy only after image push succeeds, set these G
 - `WOODPECKER_SERVER` (example: `https://ci.example.com`)
 - `WOODPECKER_TOKEN` (Woodpecker PAT)
 - `WOODPECKER_REPO` (optional override, default is GitHub `owner/repo`)
+- `WOODPECKER_REPO_ID` (optional numeric repo id, recommended to skip lookup)
 
 If `WOODPECKER_SERVER` or `WOODPECKER_TOKEN` is not set, the GitHub trigger job is skipped.
 

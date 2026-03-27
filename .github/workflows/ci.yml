@@ -237,7 +237,12 @@ jobs:
                 lookup_status="$(printf '%s' "$lookup_response" | tail -n1)"
 
                 if [ "$lookup_status" = "200" ] && [ -n "$lookup_body" ]; then
-                  found_repo_id="$(RESPONSE="$lookup_body" python3 -c 'import json,os; data=json.loads(os.environ["RESPONSE"]); print(data.get("id", ""))')"
+                  found_repo_id="$(RESPONSE="$lookup_body" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip();
+try:
+    data=json.loads(raw)
+    print(data.get("id", ""))
+except Exception:
+    print("")')"
                   if [ -n "$found_repo_id" ]; then
                     repo_id="$found_repo_id"
                     api_base="$base"
@@ -268,15 +273,39 @@ jobs:
 
           payload="$(GITHUB_SHA="$GITHUB_SHA" python3 -c 'import json,os; print(json.dumps({"branch":"main","variables":{"IMAGE_TAG":"staging","SOURCE_COMMIT_SHA":os.environ["GITHUB_SHA"]}}))')"
 
-          trigger_response="$(curl -fsSL --retry 3 --retry-delay 2 \
+          trigger_file="$(mktemp)"
+          trigger_status="$(curl -sS --retry 3 --retry-delay 2 \
             -X POST \
             -H "Authorization: Bearer $WOODPECKER_TOKEN" \
             -H "Accept: application/json" \
             -H "Content-Type: application/json" \
             -d "$payload" \
+            -o "$trigger_file" \
+            -w '%{http_code}' \
             "$api_base/repos/$repo_id/pipelines")"
 
-          pipeline_number="$(RESPONSE="$trigger_response" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip(); print(json.loads(raw).get("number", "") if raw else "")')"
+          trigger_response="$(cat "$trigger_file")"
+          rm -f "$trigger_file"
+
+          case "$trigger_status" in
+            2*) ;;
+            *)
+              echo "Woodpecker trigger failed with HTTP $trigger_status"
+              if [ -n "$trigger_response" ]; then
+                echo "$trigger_response"
+              fi
+              exit 1
+              ;;
+          esac
+
+          pipeline_number="$(RESPONSE="$trigger_response" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip();
+if not raw:
+    print("")
+else:
+    try:
+        print(json.loads(raw).get("number", ""))
+    except Exception:
+        print("")')"
 
           echo "Triggered Woodpecker staging pipeline ${pipeline_number} for ${repo_full}"
 

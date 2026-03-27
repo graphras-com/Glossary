@@ -219,6 +219,7 @@ Required GitHub Actions secrets for staging trigger:
 - `WOODPECKER_SERVER` -- base URL of your Woodpecker server
 - `WOODPECKER_TOKEN` -- Woodpecker PAT with pipeline trigger access
 - `WOODPECKER_REPO` -- optional repo override (`owner/repo`), defaults to current GitHub repo
+- `WOODPECKER_REPO_ID` -- optional numeric Woodpecker repo id (recommended to skip lookup)
 
 If `WOODPECKER_SERVER` or `WOODPECKER_TOKEN` is missing, the trigger job is skipped.
 
