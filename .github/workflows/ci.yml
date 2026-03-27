@@ -206,6 +206,7 @@ jobs:
           WOODPECKER_SERVER: ${{ secrets.WOODPECKER_SERVER }}
           WOODPECKER_TOKEN: ${{ secrets.WOODPECKER_TOKEN }}
           WOODPECKER_REPO: ${{ secrets.WOODPECKER_REPO }}
+          WOODPECKER_REPO_ID: ${{ secrets.WOODPECKER_REPO_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
         run: |
@@ -218,25 +219,64 @@ jobs:
 
           server="${WOODPECKER_SERVER%/}"
           repo_full="${WOODPECKER_REPO:-$GITHUB_REPOSITORY}"
+          repo_full_lc="$(printf '%s' "$repo_full" | tr '[:upper:]' '[:lower:]')"
+          api_base=""
+          repo_id="${WOODPECKER_REPO_ID:-}"
 
-          repo_json="$(REPO_FULL="$repo_full" python3 -c 'import os,urllib.parse; print(urllib.parse.quote(os.environ["REPO_FULL"], safe=""))')"
+          if [ -z "$repo_id" ]; then
+            for base in "$server" "$server/api"; do
+              for candidate in "$repo_full" "$repo_full_lc"; do
+                repo_json="$(REPO_FULL="$candidate" python3 -c 'import os,urllib.parse; print(urllib.parse.quote(os.environ["REPO_FULL"], safe=""))')"
+                lookup_response="$(curl -sS --retry 3 --retry-delay 2 \
+                  -H "Authorization: Bearer $WOODPECKER_TOKEN" \
+                  -H "Accept: application/json" \
+                  -w '\n%{http_code}' \
+                  "$base/repos/lookup/$repo_json")"
 
-          repo_lookup_response="$(curl -fsSL --retry 3 --retry-delay 2 \
-            -H "Authorization: Bearer $WOODPECKER_TOKEN" \
-            "$server/repos/lookup/$repo_json")"
+                lookup_body="$(printf '%s' "$lookup_response" | sed '$d')"
+                lookup_status="$(printf '%s' "$lookup_response" | tail -n1)"
 
-          repo_id="$(RESPONSE="$repo_lookup_response" python3 -c 'import json,os; print(json.loads(os.environ["RESPONSE"])["id"])')"
+                if [ "$lookup_status" = "200" ] && [ -n "$lookup_body" ]; then
+                  found_repo_id="$(RESPONSE="$lookup_body" python3 -c 'import json,os; data=json.loads(os.environ["RESPONSE"]); print(data.get("id", ""))')"
+                  if [ -n "$found_repo_id" ]; then
+                    repo_id="$found_repo_id"
+                    api_base="$base"
+                    break
+                  fi
+                fi
+              done
+
+              if [ -n "$repo_id" ]; then
+                break
+              fi
+            done
+          fi
+
+          if [ -z "$repo_id" ]; then
+            echo "Failed to resolve Woodpecker repo id for '$repo_full'."
+            echo "Set WOODPECKER_REPO (owner/repo) and optionally WOODPECKER_REPO_ID to bypass lookup."
+            exit 1
+          fi
+
+          if [ -z "$api_base" ]; then
+            if curl -sS -o /dev/null -H "Authorization: Bearer $WOODPECKER_TOKEN" "$server/api/version"; then
+              api_base="$server/api"
+            else
+              api_base="$server"
+            fi
+          fi
 
           payload="$(GITHUB_SHA="$GITHUB_SHA" python3 -c 'import json,os; print(json.dumps({"branch":"main","variables":{"IMAGE_TAG":"staging","SOURCE_COMMIT_SHA":os.environ["GITHUB_SHA"]}}))')"
 
           trigger_response="$(curl -fsSL --retry 3 --retry-delay 2 \
             -X POST \
             -H "Authorization: Bearer $WOODPECKER_TOKEN" \
+            -H "Accept: application/json" \
             -H "Content-Type: application/json" \
             -d "$payload" \
-            "$server/repos/$repo_id/pipelines")"
+            "$api_base/repos/$repo_id/pipelines")"
 
-          pipeline_number="$(RESPONSE="$trigger_response" python3 -c 'import json,os; print(json.loads(os.environ["RESPONSE"]).get("number", ""))')"
+          pipeline_number="$(RESPONSE="$trigger_response" python3 -c 'import json,os; raw=os.environ["RESPONSE"].strip(); print(json.loads(raw).get("number", "") if raw else "")')"
 
           echo "Triggered Woodpecker staging pipeline ${pipeline_number} for ${repo_full}"
 
