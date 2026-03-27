@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -12,6 +13,14 @@ from app.seed import seed
 
 # Resolved path to the frontend build output (populated by Docker build or manual build)
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
+# CORS origins: comma-separated list from env, with sensible defaults for dev
+_cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+CORS_ORIGINS: list[str] = (
+    [o.strip() for o in _cors_env.split(",") if o.strip()]
+    if _cors_env
+    else ["http://localhost:5173", "http://localhost:8000"]
+)
 
 
 @asynccontextmanager
@@ -28,10 +37,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Dictionary API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 app.include_router(categories.router)
 app.include_router(terms.router)
@@ -40,6 +49,7 @@ app.include_router(backup.router)
 
 @app.get("/health", tags=["health"])
 async def health():
+    """Unauthenticated health check for Kubernetes probes."""
     return {"status": "ok"}
 
 

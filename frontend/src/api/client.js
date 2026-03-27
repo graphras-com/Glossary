@@ -1,15 +1,84 @@
+/**
+ * API client with automatic Bearer token injection.
+ *
+ * All requests to the backend automatically include an Authorization
+ * header with an access token acquired silently from MSAL.
+ * If silent acquisition fails (e.g. token expired, no session),
+ * the user is redirected to login.
+ */
+
+import { InteractionRequiredAuthError } from "@azure/msal-browser";
+import { msalInstance } from "../auth/msalInstance";
+import { apiTokenRequest } from "../auth/msalConfig";
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? "";
+
+/**
+ * Acquire an access token silently. Falls back to redirect login
+ * if interaction is required (expired refresh token, consent needed, etc.).
+ *
+ * @returns {Promise<string|null>} The access token, or null if unavailable.
+ */
+async function getAccessToken() {
+  const account = msalInstance.getActiveAccount();
+  if (!account) {
+    // No account – user needs to log in
+    return null;
+  }
+
+  try {
+    const response = await msalInstance.acquireTokenSilent({
+      ...apiTokenRequest,
+      account,
+    });
+    return response.accessToken;
+  } catch (error) {
+    if (error instanceof InteractionRequiredAuthError) {
+      // Token can't be refreshed silently – redirect to login
+      await msalInstance.acquireTokenRedirect(apiTokenRequest);
+      return null;
+    }
+    console.error("Token acquisition failed:", error);
+    return null;
+  }
+}
 
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
+
+  // Acquire Bearer token
+  const token = await getAccessToken();
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const config = {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers,
   };
 
   const res = await fetch(url, config);
 
   if (res.status === 204) return null;
+
+  // If we get a 401, the token might be expired – trigger re-login
+  if (res.status === 401) {
+    const account = msalInstance.getActiveAccount();
+    if (account) {
+      try {
+        await msalInstance.acquireTokenRedirect(apiTokenRequest);
+      } catch {
+        // redirect will happen, swallow the error
+      }
+    }
+    throw new Error("Authentication required. Redirecting to login...");
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

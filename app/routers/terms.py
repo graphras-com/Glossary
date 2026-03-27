@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.auth import require_auth
 from app.database import get_db
 from app.models import CategoryModel, DefinitionModel, TermModel
 from app.schemas import (
@@ -20,7 +21,11 @@ from app.services.openai_recommendation import (
     recommend_definition,
 )
 
-router = APIRouter(prefix="/terms", tags=["terms"])
+router = APIRouter(
+    prefix="/terms",
+    tags=["terms"],
+    dependencies=[Depends(require_auth)],
+)
 
 
 async def _category_breadcrumb(category: CategoryModel, db: AsyncSession) -> str:

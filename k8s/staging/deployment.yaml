@@ -21,6 +21,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: __APP_NAME__-config
           env:
             - name: DATABASE_PATH
               value: /data/dictionary.db

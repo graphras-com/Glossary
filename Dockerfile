@@ -4,6 +4,13 @@ WORKDIR /build
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
+
+# Auth env vars are baked into the frontend at build time.
+# Pass these as --build-arg when building for production.
+ARG VITE_CLIENT_ID=""
+ARG VITE_TENANT_ID=""
+ARG VITE_API_SCOPE=""
+
 RUN npm run build
 
 # ── Stage 2: Python runtime with FastAPI + built frontend ─────────
