@@ -195,7 +195,7 @@ jobs:
 
   trigger-staging-deploy:
     name: Trigger Staging Deploy
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.docker-push.result == 'success' && secrets.WOODPECKER_SERVER != '' && secrets.WOODPECKER_TOKEN != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.docker-push.result == 'success'
     needs: [detect-stack, quality-gate, docker-push]
     runs-on: ubuntu-latest
     permissions:
@@ -210,6 +210,11 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
         run: |
           set -eu
+
+          if [ -z "${WOODPECKER_SERVER:-}" ] || [ -z "${WOODPECKER_TOKEN:-}" ]; then
+            echo "Skipping trigger: WOODPECKER_SERVER or WOODPECKER_TOKEN is not set."
+            exit 0
+          fi
 
           server="${WOODPECKER_SERVER%/}"
           repo_full="${WOODPECKER_REPO:-$GITHUB_REPOSITORY}"
