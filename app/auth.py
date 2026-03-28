@@ -38,15 +38,24 @@ class AuthSettings(BaseSettings):
     # Allow disabling auth entirely (useful for local development without Entra)
     auth_disabled: bool = False
 
-    model_config = {"env_prefix": "", "case_sensitive": False}
+    model_config = {
+        "env_prefix": "",
+        "case_sensitive": False,
+        "env_file": ".env",
+        "extra": "ignore",
+    }
 
     @property
     def authority(self) -> str:
         return f"https://login.microsoftonline.com/{self.tenant_id}"
 
     @property
-    def issuer(self) -> str:
+    def issuer_v2(self) -> str:
         return f"https://login.microsoftonline.com/{self.tenant_id}/v2.0"
+
+    @property
+    def issuer_v1(self) -> str:
+        return f"https://sts.windows.net/{self.tenant_id}/"
 
     @property
     def jwks_uri(self) -> str:
@@ -150,14 +159,24 @@ async def _validate_token(token: str) -> TokenPayload:
     if signing_key is None:
         raise credentials_exception
 
+    # Accept both the Application ID URI and the raw client ID as valid audiences,
+    # because Entra v1 tokens use the raw GUID while v2 tokens use the URI.
+    valid_audiences = [auth_settings.api_audience]
+    raw_client_id = auth_settings.api_audience.removeprefix("api://")
+    if raw_client_id != auth_settings.api_audience:
+        valid_audiences.append(raw_client_id)
+
+    # Accept both v1 and v2 issuer formats
+    valid_issuers = [auth_settings.issuer_v2, auth_settings.issuer_v1]
+
     # Decode and validate the token
     try:
         payload = jwt.decode(
             token,
             key=signing_key,
             algorithms=["RS256"],
-            audience=auth_settings.api_audience,
-            issuer=auth_settings.issuer,
+            audience=valid_audiences,
+            issuer=valid_issuers,
             options={
                 "verify_exp": True,
                 "verify_nbf": True,
@@ -173,7 +192,8 @@ async def _validate_token(token: str) -> TokenPayload:
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
         ) from None
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as exc:
+        logger.warning("JWT validation failed: %s", exc)
         raise credentials_exception from None
 
     # Validate tenant ID
