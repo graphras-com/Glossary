@@ -1,15 +1,89 @@
+/**
+ * API client with automatic Bearer token injection.
+ *
+ * All requests to the backend automatically include an Authorization
+ * header with an access token acquired silently from MSAL.
+ * If silent acquisition fails (e.g. token expired, no session),
+ * a popup is opened for re-authentication.
+ */
+
+import { InteractionRequiredAuthError } from "@azure/msal-browser";
+import { msalInstance } from "../auth/msalInstance";
+import { apiTokenRequest } from "../auth/msalConfig";
+import { AUTH_DISABLED } from "../auth/AuthProvider";
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? "";
+
+/**
+ * Acquire an access token silently. Falls back to popup login
+ * if interaction is required (expired refresh token, consent needed, etc.).
+ *
+ * @returns {Promise<string|null>} The access token, or null if unavailable.
+ */
+async function getAccessToken() {
+  if (AUTH_DISABLED) return null;
+
+  const account = msalInstance.getActiveAccount();
+  if (!account) {
+    return null;
+  }
+
+  try {
+    const response = await msalInstance.acquireTokenSilent({
+      ...apiTokenRequest,
+      account,
+    });
+    return response.accessToken;
+  } catch (error) {
+    if (error instanceof InteractionRequiredAuthError) {
+      try {
+        const response = await msalInstance.acquireTokenPopup(apiTokenRequest);
+        return response.accessToken;
+      } catch {
+        return null;
+      }
+    }
+    console.error("Token acquisition failed:", error);
+    return null;
+  }
+}
 
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
+
+  // Acquire Bearer token
+  const token = await getAccessToken();
+
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const config = {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers,
   };
 
   const res = await fetch(url, config);
 
   if (res.status === 204) return null;
+
+  // If we get a 401, the token might be expired – trigger re-auth
+  if (res.status === 401 && !AUTH_DISABLED) {
+    const account = msalInstance.getActiveAccount();
+    if (account) {
+      try {
+        await msalInstance.acquireTokenPopup(apiTokenRequest);
+      } catch {
+        // popup was closed or failed
+      }
+    }
+    throw new Error("Authentication required. Please sign in again.");
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));

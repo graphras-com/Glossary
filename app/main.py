@@ -1,24 +1,55 @@
+import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.database import async_session, engine
+from alembic import command
+from app.database import async_session, engine, is_sqlite
 from app.models import Base
 from app.routers import backup, categories, terms
 from app.seed import seed
 
+logger = logging.getLogger(__name__)
+
 # Resolved path to the frontend build output (populated by Docker build or manual build)
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
+# CORS origins: comma-separated list from env, with sensible defaults for dev
+_cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+CORS_ORIGINS: list[str] = (
+    [o.strip() for o in _cors_env.split(",") if o.strip()]
+    if _cors_env
+    else ["http://localhost:5173", "http://localhost:8000"]
+)
+
+# Path to alembic.ini (lives at the project root)
+ALEMBIC_INI = Path(__file__).resolve().parent.parent / "alembic.ini"
+
+
+def _run_migrations() -> None:
+    """Run Alembic migrations to bring the database schema up to date."""
+    cfg = Config(str(ALEMBIC_INI))
+    command.upgrade(cfg, "head")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables and seed on startup
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Run Alembic migrations (works for both SQLite and PostgreSQL).
+    # For SQLite in local dev, this also creates the tables on first run.
+    if is_sqlite():
+        # SQLite: use create_all for simplicity (no migration history needed locally)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    else:
+        # PostgreSQL: run Alembic migrations for proper schema management
+        logger.info("Running Alembic migrations …")
+        _run_migrations()
+
     async with async_session() as db:
         await seed(db)
     yield
@@ -28,10 +59,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Dictionary API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 app.include_router(categories.router)
 app.include_router(terms.router)
@@ -40,6 +71,7 @@ app.include_router(backup.router)
 
 @app.get("/health", tags=["health"])
 async def health():
+    """Unauthenticated health check for Kubernetes probes."""
     return {"status": "ok"}
 
 

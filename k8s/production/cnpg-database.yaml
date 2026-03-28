@@ -1,0 +1,12 @@
+# Creates the 'glossary' database in the shared CNPG cluster.
+# This resource must live in the same namespace as the CNPG Cluster ('default').
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: __APP_NAME__-prod-db
+  namespace: default
+spec:
+  name: __APP_NAME___prod
+  owner: app
+  cluster:
+    name: pg

@@ -3,11 +3,16 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import require_auth
 from app.database import get_db
 from app.models import CategoryModel
 from app.schemas import CategoryCreate, CategoryRead, CategoryUpdate
 
-router = APIRouter(prefix="/categories", tags=["categories"])
+router = APIRouter(
+    prefix="/categories",
+    tags=["categories"],
+    dependencies=[Depends(require_auth)],
+)
 
 
 @router.get("/", response_model=list[CategoryRead])

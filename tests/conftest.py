@@ -2,9 +2,30 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.auth import TokenPayload, require_auth
 from app.database import get_db
 from app.main import app
 from app.models import Base
+
+# ---------------------------------------------------------------------------
+# Auth override - all existing tests run as an authenticated admin user
+# ---------------------------------------------------------------------------
+
+_TEST_USER = TokenPayload(
+    sub="test-user-id",
+    name="Test User",
+    email="test@example.com",
+    oid="00000000-0000-0000-0000-000000000001",
+    tid="test-tenant-id",
+    scopes=["access_as_user"],
+    roles=["Glossary.Admin"],
+    raw={},
+)
+
+
+async def _override_require_auth() -> TokenPayload:
+    """Bypass real JWT validation in tests."""
+    return _TEST_USER
 
 
 @pytest.fixture()
@@ -33,7 +54,7 @@ async def db_session(engine):
 async def client(engine):
     """
     HTTP test client with the get_db dependency overridden to use the
-    in-memory SQLite database.
+    in-memory SQLite database, and auth bypassed.
     """
     session_factory = async_sessionmaker(
         engine, class_=AsyncSession, expire_on_commit=False
@@ -44,6 +65,7 @@ async def client(engine):
             yield session
 
     app.dependency_overrides[get_db] = _override_get_db
+    app.dependency_overrides[require_auth] = _override_require_auth
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac

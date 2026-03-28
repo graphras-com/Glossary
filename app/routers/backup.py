@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth import require_auth, require_role
 from app.database import get_db
 from app.models import CategoryModel, DefinitionModel, TermModel
 from app.schemas import (
@@ -11,7 +12,11 @@ from app.schemas import (
     BackupTerm,
 )
 
-router = APIRouter(prefix="/backup", tags=["backup"])
+router = APIRouter(
+    prefix="/backup",
+    tags=["backup"],
+    dependencies=[Depends(require_auth)],
+)
 
 
 @router.get("/", response_model=BackupPayload)
@@ -39,7 +44,11 @@ async def backup(db: AsyncSession = Depends(get_db)):
     return BackupPayload(version=1, categories=backup_categories, terms=backup_terms)
 
 
-@router.post("/restore", status_code=200)
+@router.post(
+    "/restore",
+    status_code=200,
+    dependencies=[Depends(require_role("Glossary.Admin"))],
+)
 async def restore(payload: BackupPayload, db: AsyncSession = Depends(get_db)):
     """Replace all data with the contents of the uploaded backup JSON.
 
