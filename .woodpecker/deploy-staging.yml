@@ -67,6 +67,7 @@ steps:
 
         render_apply k8s/staging/namespace.yaml
         kubectl -n "$NAMESPACE" create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
+        render_apply k8s/staging/configmap.yaml
         render_apply k8s/staging/pvc.yaml
         render_apply k8s/staging/deployment.yaml
         render_apply k8s/staging/service.yaml
