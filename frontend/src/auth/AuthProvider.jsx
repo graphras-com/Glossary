@@ -3,8 +3,11 @@
  *
  * Wraps the application in MsalProvider and handles:
  * - MSAL instance initialisation
- * - Redirect promise handling (for redirect-based login flows)
  * - Loading state while MSAL initialises
+ * - Setting the active account on login success
+ *
+ * Uses popup-based login so tokens can remain in memory only
+ * (redirect flow is incompatible with memoryStorage).
  */
 
 import { EventType } from "@azure/msal-browser";
@@ -13,12 +16,11 @@ import { useEffect, useState } from "react";
 import { msalInstance } from "./msalInstance";
 
 /**
- * After a redirect login, MSAL needs to process the response.
  * Set the active account so that silent token acquisition works.
  */
-function handleRedirectAndSetAccount(instance) {
+function setActiveAccountIfNeeded(instance) {
   const accounts = instance.getAllAccounts();
-  if (accounts.length > 0) {
+  if (accounts.length > 0 && !instance.getActiveAccount()) {
     instance.setActiveAccount(accounts[0]);
   }
 
@@ -36,9 +38,8 @@ export default function AuthProvider({ children }) {
   useEffect(() => {
     msalInstance
       .initialize()
-      .then(() => msalInstance.handleRedirectPromise())
       .then(() => {
-        handleRedirectAndSetAccount(msalInstance);
+        setActiveAccountIfNeeded(msalInstance);
         setIsReady(true);
       })
       .catch((error) => {

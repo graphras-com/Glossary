@@ -4,7 +4,7 @@
  * All requests to the backend automatically include an Authorization
  * header with an access token acquired silently from MSAL.
  * If silent acquisition fails (e.g. token expired, no session),
- * the user is redirected to login.
+ * a popup is opened for re-authentication.
  */
 
 import { InteractionRequiredAuthError } from "@azure/msal-browser";
@@ -14,7 +14,7 @@ import { apiTokenRequest } from "../auth/msalConfig";
 const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 /**
- * Acquire an access token silently. Falls back to redirect login
+ * Acquire an access token silently. Falls back to popup login
  * if interaction is required (expired refresh token, consent needed, etc.).
  *
  * @returns {Promise<string|null>} The access token, or null if unavailable.
@@ -34,9 +34,13 @@ async function getAccessToken() {
     return response.accessToken;
   } catch (error) {
     if (error instanceof InteractionRequiredAuthError) {
-      // Token can't be refreshed silently – redirect to login
-      await msalInstance.acquireTokenRedirect(apiTokenRequest);
-      return null;
+      // Token can't be refreshed silently – open popup for re-auth
+      try {
+        const response = await msalInstance.acquireTokenPopup(apiTokenRequest);
+        return response.accessToken;
+      } catch {
+        return null;
+      }
     }
     console.error("Token acquisition failed:", error);
     return null;
@@ -67,17 +71,17 @@ async function request(path, options = {}) {
 
   if (res.status === 204) return null;
 
-  // If we get a 401, the token might be expired – trigger re-login
+  // If we get a 401, the token might be expired – trigger re-auth
   if (res.status === 401) {
     const account = msalInstance.getActiveAccount();
     if (account) {
       try {
-        await msalInstance.acquireTokenRedirect(apiTokenRequest);
+        await msalInstance.acquireTokenPopup(apiTokenRequest);
       } catch {
-        // redirect will happen, swallow the error
+        // popup was closed or failed
       }
     }
-    throw new Error("Authentication required. Redirecting to login...");
+    throw new Error("Authentication required. Please sign in again.");
   }
 
   if (!res.ok) {

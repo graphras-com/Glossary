@@ -28,8 +28,9 @@ export const msalConfig = {
   auth: {
     clientId,
     authority,
-    // Redirect back to the app root after login
-    redirectUri: window.location.origin,
+    // Popup redirects to a lightweight page that loads MSAL and handles
+    // the auth response without mounting the full SPA.
+    redirectUri: `${window.location.origin}/auth-popup.html`,
     postLogoutRedirectUri: window.location.origin,
     // Single-tenant: only allow users from this tenant
     knownAuthorities: [authority],

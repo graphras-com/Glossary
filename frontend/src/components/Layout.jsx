@@ -6,8 +6,9 @@ export default function Layout() {
   const account = accounts[0];
 
   const handleLogout = () => {
-    instance.logoutRedirect({
+    instance.logoutPopup({
       postLogoutRedirectUri: window.location.origin,
+      mainWindowRedirectUri: window.location.origin,
     });
   };
 
