@@ -22,7 +22,6 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 async function getAccessToken() {
   const account = msalInstance.getActiveAccount();
   if (!account) {
-    // No account – user needs to log in
     return null;
   }
 
@@ -34,7 +33,6 @@ async function getAccessToken() {
     return response.accessToken;
   } catch (error) {
     if (error instanceof InteractionRequiredAuthError) {
-      // Token can't be refreshed silently – open popup for re-auth
       try {
         const response = await msalInstance.acquireTokenPopup(apiTokenRequest);
         return response.accessToken;

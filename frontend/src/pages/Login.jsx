@@ -16,13 +16,20 @@ export default function Login() {
 
   const handleLogin = () => {
     setError(null);
-    instance.loginPopup(loginRequest).catch((err) => {
-      // User closed the popup or something went wrong
-      if (err.errorCode !== "user_cancelled") {
-        console.error("Login failed:", err);
-        setError(err.errorMessage || "Login failed. Please try again.");
-      }
-    });
+    instance
+      .loginPopup(loginRequest)
+      .then((response) => {
+        if (response?.account) {
+          instance.setActiveAccount(response.account);
+        }
+      })
+      .catch((err) => {
+        // User closed the popup or something went wrong
+        if (err.errorCode !== "user_cancelled") {
+          console.error("Login failed:", err);
+          setError(err.errorMessage || "Login failed. Please try again.");
+        }
+      });
   };
 
   return (
