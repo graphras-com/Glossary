@@ -37,13 +37,10 @@ function setActiveAccountIfNeeded(instance) {
 }
 
 export default function AuthProvider({ children }) {
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = useState(AUTH_DISABLED);
 
   useEffect(() => {
-    if (AUTH_DISABLED) {
-      setIsReady(true);
-      return;
-    }
+    if (AUTH_DISABLED) return;
 
     msalInstance
       .initialize()
