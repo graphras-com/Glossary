@@ -4,6 +4,8 @@
  * Wraps routes that should only be accessible to authenticated users.
  * If the user is not authenticated, renders the Login page instead.
  * While authentication state is loading, shows a loading indicator.
+ *
+ * When VITE_AUTH_DISABLED=true the guard is a no-op pass-through.
  */
 
 import {
@@ -13,8 +15,9 @@ import {
 } from "@azure/msal-react";
 import { InteractionStatus } from "@azure/msal-browser";
 import Login from "../pages/Login";
+import { AUTH_DISABLED } from "./AuthProvider";
 
-export default function RequireAuth({ children }) {
+function AuthenticatedGuard({ children }) {
   const { inProgress } = useMsal();
 
   // Show loading while MSAL is handling a redirect or other interaction
@@ -34,4 +37,12 @@ export default function RequireAuth({ children }) {
       </UnauthenticatedTemplate>
     </>
   );
+}
+
+export default function RequireAuth({ children }) {
+  if (AUTH_DISABLED) {
+    return children;
+  }
+
+  return <AuthenticatedGuard>{children}</AuthenticatedGuard>;
 }

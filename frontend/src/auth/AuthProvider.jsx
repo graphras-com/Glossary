@@ -8,12 +8,16 @@
  *
  * Uses popup-based login so tokens can remain in memory only
  * (redirect flow is incompatible with memoryStorage).
+ *
+ * Set VITE_AUTH_DISABLED=true to bypass MSAL entirely (tests / local dev).
  */
 
 import { EventType } from "@azure/msal-browser";
 import { MsalProvider } from "@azure/msal-react";
 import { useEffect, useState } from "react";
 import { msalInstance } from "./msalInstance";
+
+export const AUTH_DISABLED = import.meta.env.VITE_AUTH_DISABLED === "true";
 
 /**
  * Set the active account so that silent token acquisition works.
@@ -36,6 +40,11 @@ export default function AuthProvider({ children }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    if (AUTH_DISABLED) {
+      setIsReady(true);
+      return;
+    }
+
     msalInstance
       .initialize()
       .then(() => {
@@ -54,6 +63,10 @@ export default function AuthProvider({ children }) {
         <p>Initialising authentication...</p>
       </div>
     );
+  }
+
+  if (AUTH_DISABLED) {
+    return children;
   }
 
   return <MsalProvider instance={msalInstance}>{children}</MsalProvider>;

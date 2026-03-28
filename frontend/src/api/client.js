@@ -10,6 +10,7 @@
 import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { msalInstance } from "../auth/msalInstance";
 import { apiTokenRequest } from "../auth/msalConfig";
+import { AUTH_DISABLED } from "../auth/AuthProvider";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
@@ -20,6 +21,8 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? "";
  * @returns {Promise<string|null>} The access token, or null if unavailable.
  */
 async function getAccessToken() {
+  if (AUTH_DISABLED) return null;
+
   const account = msalInstance.getActiveAccount();
   if (!account) {
     return null;
@@ -70,7 +73,7 @@ async function request(path, options = {}) {
   if (res.status === 204) return null;
 
   // If we get a 401, the token might be expired – trigger re-auth
-  if (res.status === 401) {
+  if (res.status === 401 && !AUTH_DISABLED) {
     const account = msalInstance.getActiveAccount();
     if (account) {
       try {

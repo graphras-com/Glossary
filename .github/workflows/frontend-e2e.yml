@@ -76,6 +76,7 @@ jobs:
         run: npm test
         env:
           CI: "true"
+          VITE_AUTH_DISABLED: "true"
 
       - name: Upload test results
         if: ${{ !cancelled() }}
