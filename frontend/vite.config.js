@@ -1,5 +1,9 @@
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Proxy only fetch/XHR API requests to the backend, not page navigations.
 function apiOnly(req) {
@@ -13,6 +17,14 @@ function apiOnly(req) {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        'auth-popup': resolve(__dirname, 'auth-popup.html'),
+      },
+    },
+  },
   server: {
     proxy: {
       '/categories': { target: 'http://localhost:8000', bypass: apiOnly },
