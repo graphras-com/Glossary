@@ -1,15 +1,20 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from app.database import async_session, engine
+from alembic import command
+from app.database import async_session, engine, is_sqlite
 from app.models import Base
 from app.routers import backup, categories, terms
 from app.seed import seed
+
+logger = logging.getLogger(__name__)
 
 # Resolved path to the frontend build output (populated by Docker build or manual build)
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
@@ -22,12 +27,29 @@ CORS_ORIGINS: list[str] = (
     else ["http://localhost:5173", "http://localhost:8000"]
 )
 
+# Path to alembic.ini (lives at the project root)
+ALEMBIC_INI = Path(__file__).resolve().parent.parent / "alembic.ini"
+
+
+def _run_migrations() -> None:
+    """Run Alembic migrations to bring the database schema up to date."""
+    cfg = Config(str(ALEMBIC_INI))
+    command.upgrade(cfg, "head")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables and seed on startup
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Run Alembic migrations (works for both SQLite and PostgreSQL).
+    # For SQLite in local dev, this also creates the tables on first run.
+    if is_sqlite():
+        # SQLite: use create_all for simplicity (no migration history needed locally)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    else:
+        # PostgreSQL: run Alembic migrations for proper schema management
+        logger.info("Running Alembic migrations …")
+        _run_migrations()
+
     async with async_session() as db:
         await seed(db)
     yield

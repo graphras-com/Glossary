@@ -52,6 +52,9 @@ steps:
         TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
         IMAGE_TAG="$${CI_COMMIT_TAG:-latest}"
 
+        # Database name uses underscores (valid PG identifier)
+        DB_NAME="$$(printf '%s' "$APP_NAME" | tr '-' '_')_prod"
+
         render_apply() {
           file="$1"
           sed \
@@ -64,10 +67,28 @@ steps:
             "$file" | kubectl apply -f -
         }
 
+        # --- Namespace and registry credentials ---
         render_apply k8s/production/namespace.yaml
         kubectl -n "$NAMESPACE" create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
+
+        # --- CloudNativePG: create database in the shared cluster (default ns) ---
+        render_apply k8s/production/cnpg-database.yaml
+
+        # --- Build DATABASE_URL from the CNPG cluster's app secret ---
+        PGUSER="$(kubectl -n default get secret pg-app -o jsonpath='{.data.username}' | base64 -d)"
+        PGPASS="$(kubectl -n default get secret pg-app -o jsonpath='{.data.password}' | base64 -d)"
+        PGHOST="pg-rw.default.svc"
+        PGPORT="5432"
+
+        DATABASE_URL="postgresql://$${PGUSER}:$${PGPASS}@$${PGHOST}:$${PGPORT}/$${DB_NAME}"
+
+        # Create the db-credentials secret in the app namespace
+        kubectl -n "$NAMESPACE" create secret generic "$${APP_NAME}-db-credentials" \
+          --from-literal="DATABASE_URL=$${DATABASE_URL}" \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+        # --- Apply remaining manifests ---
         render_apply k8s/production/configmap.yaml
-        render_apply k8s/production/pvc.yaml
         render_apply k8s/production/deployment.yaml
         render_apply k8s/production/service.yaml
         render_apply k8s/production/ingress.yaml

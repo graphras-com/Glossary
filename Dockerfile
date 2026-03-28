@@ -28,11 +28,19 @@ RUN uv sync --frozen --no-dev --no-install-project 2>/dev/null || uv sync --no-d
 COPY app/ app/
 COPY base_data_import/ base_data_import/
 
+# Copy Alembic configuration and migrations
+COPY alembic.ini ./
+COPY alembic/ alembic/
+
 # Copy built frontend into the static directory
 COPY --from=frontend-build /build/dist static/
 
-# Create a directory for the SQLite database (can be mounted as a volume)
+# Create a directory for the SQLite database (used when DATABASE_URL is not set)
 RUN mkdir -p /data
+
+# Database configuration:
+#   - Set DATABASE_URL for PostgreSQL (e.g. postgresql://user:pass@host/db)
+#   - Falls back to SQLite at DATABASE_PATH when DATABASE_URL is not set
 ENV DATABASE_PATH=/data/dictionary.db
 
 EXPOSE 8000
