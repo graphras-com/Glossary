@@ -1,3 +1,11 @@
+"""FastAPI application factory.
+
+This module is **generic** — it reads the resource registry from
+:mod:`resources.config` and auto-generates all CRUD routers.  When
+creating a new application from the template, you should not need to
+modify this file.
+"""
+
 import asyncio
 import logging
 import os
@@ -10,10 +18,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from alembic import command
+from app.crud.backup import create_backup_router
+from app.crud.nested_router import create_nested_crud_router
+from app.crud.router_factory import create_crud_router
+from app.crud.seed import seed_from_file
 from app.database import async_session, engine, is_sqlite
 from app.models import Base
-from app.routers import backup, categories, terms
-from app.seed import seed
+from resources.config import (
+    ADMIN_ROLE,
+    APP_TITLE,
+    APP_VERSION,
+    SEED_FILE,
+    _load_custom_routers,
+    registry,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,12 +81,12 @@ async def lifespan(app: FastAPI):
         await _run_migrations()
 
     async with async_session() as db:
-        await seed(db)
+        await seed_from_file(db, registry, SEED_FILE)
     yield
     await engine.dispose()
 
 
-app = FastAPI(title="Dictionary API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title=APP_TITLE, version=APP_VERSION, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -76,9 +94,22 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
-app.include_router(categories.router)
-app.include_router(terms.router)
-app.include_router(backup.router)
+
+# --- Auto-register CRUD routers from the resource registry ----------------
+for resource_config in registry.resources:
+    crud_router = create_crud_router(resource_config)
+    app.include_router(crud_router)
+    for child_config in resource_config.children:
+        nested_router = create_nested_crud_router(resource_config, child_config)
+        app.include_router(nested_router)
+
+# --- Backup / Restore router (generic) -----------------------------------
+backup_router = create_backup_router(registry, admin_role=ADMIN_ROLE)
+app.include_router(backup_router)
+
+# --- Custom (domain-specific) routers ------------------------------------
+for custom_router in _load_custom_routers():
+    app.include_router(custom_router)
 
 
 @app.get("/health", tags=["health"])

@@ -1,57 +1,23 @@
-from sqlalchemy import ForeignKey, String, Text
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+"""SQLAlchemy declarative base and model re-exports.
+
+The :class:`Base` class lives here so the generic framework (database,
+alembic, tests) can import it without depending on application-specific
+code.  The concrete model classes are defined in :mod:`resources.models`
+and re-exported here for backward compatibility.
+"""
+
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
     pass
 
 
-class CategoryModel(Base):
-    __tablename__ = "categories"
-
-    id: Mapped[str] = mapped_column(String(100), primary_key=True)
-    parent_id: Mapped[str | None] = mapped_column(
-        String(100), ForeignKey("categories.id"), nullable=True
-    )
-    label: Mapped[str] = mapped_column(String(200), nullable=False)
-
-    parent: Mapped["CategoryModel | None"] = relationship(
-        "CategoryModel", remote_side=[id], lazy="selectin"
-    )
-    definitions: Mapped[list["DefinitionModel"]] = relationship(
-        back_populates="category_rel", lazy="selectin"
-    )
-
-
-class TermModel(Base):
-    __tablename__ = "terms"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    term: Mapped[str] = mapped_column(
-        String(300), nullable=False, unique=True, index=True
-    )
-
-    definitions: Mapped[list["DefinitionModel"]] = relationship(
-        back_populates="term_rel", lazy="selectin", cascade="all, delete-orphan"
-    )
-
-
-class DefinitionModel(Base):
-    __tablename__ = "definitions"
-
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    term_id: Mapped[int] = mapped_column(
-        ForeignKey("terms.id", ondelete="CASCADE"), nullable=False
-    )
-    en: Mapped[str] = mapped_column(Text, nullable=False)
-    da: Mapped[str | None] = mapped_column(Text, nullable=True)
-    category_id: Mapped[str] = mapped_column(
-        String(100), ForeignKey("categories.id"), nullable=False
-    )
-
-    term_rel: Mapped["TermModel"] = relationship(
-        back_populates="definitions", lazy="selectin"
-    )
-    category_rel: Mapped["CategoryModel"] = relationship(
-        back_populates="definitions", lazy="selectin"
-    )
+# Re-export application models so existing imports continue to work.
+# When creating a new application, update these imports to point to
+# your own models in resources/models.py.
+from resources.models import (  # noqa: E402, F401
+    CategoryModel,
+    DefinitionModel,
+    TermModel,
+)

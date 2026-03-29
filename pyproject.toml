@@ -43,7 +43,7 @@ dev = [
 
 
 [tool.setuptools]
-packages = ["app"]
+packages = ["app", "resources"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -69,7 +69,9 @@ select = [
 ignore = [
     "E501",  # line length handled by formatter
     "B008",  # Depends() in function defaults is idiomatic FastAPI
+    "N803",  # PascalCase function args (Model) used for readability in generic factories
+    "N806",  # PascalCase local vars (Model, Schema) used for readability in generic factories
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["app"]
+known-first-party = ["app", "resources"]

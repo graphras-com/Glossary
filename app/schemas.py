@@ -1,111 +1,24 @@
-from pydantic import BaseModel, Field
+"""Pydantic schema re-exports for backward compatibility.
 
-# ---------------------------------------------------------------------------
-# Category
-# ---------------------------------------------------------------------------
+Concrete schemas are defined in :mod:`resources.schemas`.  This module
+re-exports them so that existing imports (``from app.schemas import ...``)
+continue to work without changes.
+"""
 
-
-class CategoryCreate(BaseModel):
-    id: str = Field(..., min_length=1, examples=["network.mobile"])
-    parent_id: str | None = Field(None, examples=["network"])
-    label: str = Field(..., min_length=1, examples=["Mobile"])
-
-
-class CategoryRead(BaseModel):
-    id: str
-    parent_id: str | None
-    label: str
-
-    model_config = {"from_attributes": True}
-
-
-class CategoryUpdate(BaseModel):
-    parent_id: str | None = None
-    label: str | None = Field(None, min_length=1)
-
-
-# ---------------------------------------------------------------------------
-# Definition
-# ---------------------------------------------------------------------------
-
-
-class DefinitionCreate(BaseModel):
-    en: str = Field(..., min_length=1)
-    da: str | None = Field(None, min_length=1)
-    category_id: str = Field(..., min_length=1)
-
-
-class DefinitionRead(BaseModel):
-    id: int
-    en: str
-    da: str | None
-    category_id: str
-
-    model_config = {"from_attributes": True}
-
-
-class DefinitionUpdate(BaseModel):
-    en: str | None = Field(None, min_length=1)
-    da: str | None = None
-    category_id: str | None = Field(None, min_length=1)
-
-
-class DefinitionRecommendRequest(BaseModel):
-    term: str = Field(..., min_length=1)
-    category_id: str | None = Field(None, min_length=1)
-
-
-class DefinitionRecommendResponse(BaseModel):
-    en: str
-    da: str
-    model: str
-
-
-# ---------------------------------------------------------------------------
-# Term
-# ---------------------------------------------------------------------------
-
-
-class TermCreate(BaseModel):
-    term: str = Field(..., min_length=1)
-    definitions: list[DefinitionCreate] = Field(..., min_length=1)
-
-
-class TermRead(BaseModel):
-    id: int
-    term: str
-    definitions: list[DefinitionRead]
-
-    model_config = {"from_attributes": True}
-
-
-class TermUpdate(BaseModel):
-    term: str | None = Field(None, min_length=1)
-
-
-# ---------------------------------------------------------------------------
-# Backup / Restore
-# ---------------------------------------------------------------------------
-
-
-class BackupDefinition(BaseModel):
-    en: str
-    da: str | None = None
-    category_id: str
-
-
-class BackupTerm(BaseModel):
-    term: str
-    definitions: list[BackupDefinition]
-
-
-class BackupCategory(BaseModel):
-    id: str
-    parent_id: str | None = None
-    label: str
-
-
-class BackupPayload(BaseModel):
-    version: int = 1
-    categories: list[BackupCategory]
-    terms: list[BackupTerm]
+from resources.schemas import (  # noqa: F401
+    BackupCategory,
+    BackupDefinition,
+    BackupPayload,
+    BackupTerm,
+    CategoryCreate,
+    CategoryRead,
+    CategoryUpdate,
+    DefinitionCreate,
+    DefinitionRead,
+    DefinitionRecommendRequest,
+    DefinitionRecommendResponse,
+    DefinitionUpdate,
+    TermCreate,
+    TermRead,
+    TermUpdate,
+)

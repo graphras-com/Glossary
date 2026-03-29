@@ -317,7 +317,9 @@ async def test_recommend_definition(client: AsyncClient, seed_categories, monkey
             "model": "gpt-4.1-mini",
         }
 
-    monkeypatch.setattr("app.routers.terms.recommend_definition", fake_recommend)
+    monkeypatch.setattr(
+        "resources.routers.recommend.recommend_definition", fake_recommend
+    )
 
     r = await client.post(
         "/terms/recommend-definition",
@@ -348,7 +350,9 @@ async def test_recommend_definition_provider_error_503(
     async def fake_recommend(term: str, category_context: str | None = None):
         raise RecommendationServiceError("AI provider returned an error")
 
-    monkeypatch.setattr("app.routers.terms.recommend_definition", fake_recommend)
+    monkeypatch.setattr(
+        "resources.routers.recommend.recommend_definition", fake_recommend
+    )
 
     r = await client.post(
         "/terms/recommend-definition",
