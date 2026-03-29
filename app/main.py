@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
@@ -31,10 +32,21 @@ CORS_ORIGINS: list[str] = (
 ALEMBIC_INI = Path(__file__).resolve().parent.parent / "alembic.ini"
 
 
-def _run_migrations() -> None:
-    """Run Alembic migrations to bring the database schema up to date."""
+def _run_migrations_sync() -> None:
+    """Run Alembic migrations in a fresh event loop (called from a thread)."""
     cfg = Config(str(ALEMBIC_INI))
     command.upgrade(cfg, "head")
+
+
+async def _run_migrations() -> None:
+    """Run Alembic migrations in a separate thread.
+
+    Alembic's async env.py calls asyncio.run() which requires its own event
+    loop.  Running in a thread avoids the "cannot call asyncio.run() from a
+    running event loop" error when called from uvicorn's lifespan.
+    """
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _run_migrations_sync)
 
 
 @asynccontextmanager
@@ -48,7 +60,7 @@ async def lifespan(app: FastAPI):
     else:
         # PostgreSQL: run Alembic migrations for proper schema management
         logger.info("Running Alembic migrations …")
-        _run_migrations()
+        await _run_migrations()
 
     async with async_session() as db:
         await seed(db)
