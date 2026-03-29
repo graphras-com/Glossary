@@ -1,61 +1,22 @@
-import json
-from pathlib import Path
+"""Backward-compatible seed wrapper.
 
-from sqlalchemy import select
+The actual seeding logic now lives in :mod:`app.crud.seed` and uses the
+resource registry.  This module re-exports the old interface so that
+existing tests (``from app.seed import seed, SEED_FILE``) continue to
+work.
+"""
+
+from __future__ import annotations
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import CategoryModel, DefinitionModel, TermModel
+from app.crud.seed import seed_from_file
+from resources.config import SEED_FILE, registry
 
-BASE_DATA = Path(__file__).resolve().parent.parent / "base_data_import"
-SEED_FILE = BASE_DATA / "glossary-seed.json"
+# Re-export for backward compatibility
+__all__ = ["SEED_FILE", "seed"]
 
 
 async def seed(db: AsyncSession) -> None:
-    """Seed the database from the backup-format glossary-seed.json if empty."""
-
-    # Skip if data already exists
-    result = await db.execute(select(CategoryModel).limit(1))
-    if result.scalar_one_or_none() is not None:
-        return
-
-    payload = json.loads(SEED_FILE.read_text())
-
-    # --- Categories (parents before children) ---
-    inserted: set[str] = set()
-    remaining = list(payload["categories"])
-    max_rounds = len(remaining) + 1
-    for _ in range(max_rounds):
-        if not remaining:
-            break
-        still_remaining = []
-        for cat in remaining:
-            if cat["parent_id"] is None or cat["parent_id"] in inserted:
-                db.add(
-                    CategoryModel(
-                        id=cat["id"],
-                        parent_id=cat["parent_id"],
-                        label=cat["label"],
-                    )
-                )
-                inserted.add(cat["id"])
-            else:
-                still_remaining.append(cat)
-        remaining = still_remaining
-    await db.flush()
-
-    # --- Terms + definitions ---
-    for t in payload["terms"]:
-        term = TermModel(term=t["term"])
-        db.add(term)
-        await db.flush()
-        for d in t["definitions"]:
-            db.add(
-                DefinitionModel(
-                    term_id=term.id,
-                    en=d["en"],
-                    da=d.get("da"),
-                    category_id=d["category_id"],
-                )
-            )
-
-    await db.commit()
+    """Seed the database using the application's configured seed file."""
+    await seed_from_file(db, registry, SEED_FILE)

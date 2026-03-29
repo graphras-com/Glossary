@@ -1,24 +1,26 @@
 /**
- * API client with automatic Bearer token injection.
+ * Generic API client with automatic Bearer token injection.
  *
- * All requests to the backend automatically include an Authorization
- * header with an access token acquired silently from MSAL.
- * If silent acquisition fails (e.g. token expired, no session),
- * a popup is opened for re-authentication.
+ * This module is **generic** — it provides a base `request()` function
+ * and auto-generates CRUD functions for each resource defined in the
+ * resource config.  When creating a new application, you should not
+ * need to modify this file.
+ *
+ * Domain-specific API functions (e.g. `recommendDefinition`) can be
+ * added at the bottom of this file or in a separate module.
  */
 
 import { InteractionRequiredAuthError } from "@azure/msal-browser";
 import { msalInstance } from "../auth/msalInstance";
 import { apiTokenRequest } from "../auth/msalConfig";
 import { AUTH_DISABLED } from "../auth/AuthProvider";
+import { resources } from "../config/resources";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 /**
  * Acquire an access token silently. Falls back to popup login
- * if interaction is required (expired refresh token, consent needed, etc.).
- *
- * @returns {Promise<string|null>} The access token, or null if unavailable.
+ * if interaction is required.
  */
 async function getAccessToken() {
   if (AUTH_DISABLED) return null;
@@ -48,10 +50,12 @@ async function getAccessToken() {
   }
 }
 
-async function request(path, options = {}) {
+/**
+ * Base HTTP request function with token injection and error handling.
+ */
+export async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
 
-  // Acquire Bearer token
   const token = await getAccessToken();
 
   const headers = {
@@ -72,7 +76,6 @@ async function request(path, options = {}) {
 
   if (res.status === 204) return null;
 
-  // If we get a 401, the token might be expired – trigger re-auth
   if (res.status === 401 && !AUTH_DISABLED) {
     const account = msalInstance.getActiveAccount();
     if (account) {
@@ -94,103 +97,148 @@ async function request(path, options = {}) {
   return res.json();
 }
 
+// =========================================================================
+// Auto-generated CRUD functions for each resource
+// =========================================================================
+
+/**
+ * Build a query string from a params object, omitting empty values.
+ */
+function toQuery(params = {}) {
+  const query = new URLSearchParams();
+  for (const [key, val] of Object.entries(params)) {
+    if (val) query.set(key, val);
+  }
+  return query.toString();
+}
+
+/**
+ * Build CRUD API functions for a resource config.
+ *
+ * Returns an object with: list, get, create, update, delete
+ * and optional nested child functions.
+ */
+function buildResourceApi(resource) {
+  const path = resource.apiPath;
+  const api = {
+    list: (params) => {
+      const qs = toQuery(params);
+      return request(`${path}/${qs ? `?${qs}` : ""}`);
+    },
+    get: (id) => request(`${path}/${id}`),
+    create: (data) =>
+      request(`${path}/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id, data) =>
+      request(`${path}/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    delete: (id) => request(`${path}/${id}`, { method: "DELETE" }),
+  };
+
+  // Nested child resource functions
+  for (const child of resource.children || []) {
+    api[child.name] = {
+      create: (parentId, data) =>
+        request(`${path}/${parentId}/${child.name}`, {
+          method: "POST",
+          body: JSON.stringify(data),
+        }),
+      update: (parentId, childId, data) =>
+        request(`${path}/${parentId}/${child.name}/${childId}`, {
+          method: "PATCH",
+          body: JSON.stringify(data),
+        }),
+      delete: (parentId, childId) =>
+        request(`${path}/${parentId}/${child.name}/${childId}`, {
+          method: "DELETE",
+        }),
+    };
+  }
+
+  return api;
+}
+
+/**
+ * Auto-generated API object.
+ *
+ * Usage:
+ *   import { api } from "../api/client";
+ *   const terms = await api.terms.list({ q: "LTE" });
+ *   const term = await api.terms.get(1);
+ *   await api.terms.definitions.create(termId, { en: "...", ... });
+ */
+export const api = {};
+for (const resource of resources) {
+  api[resource.name] = buildResourceApi(resource);
+}
+
+// =========================================================================
+// Backward-compatible named exports (so existing code doesn't break)
+// =========================================================================
+
 // ── Categories ──
-
 export function getCategories() {
-  return request("/categories/");
+  return api.categories.list();
 }
-
 export function getCategory(id) {
-  return request(`/categories/${id}`);
+  return api.categories.get(id);
 }
-
 export function createCategory(data) {
-  return request("/categories/", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return api.categories.create(data);
 }
-
 export function updateCategory(id, data) {
-  return request(`/categories/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
+  return api.categories.update(id, data);
 }
-
 export function deleteCategory(id) {
-  return request(`/categories/${id}`, { method: "DELETE" });
+  return api.categories.delete(id);
 }
 
 // ── Terms ──
-
 export function getTerms(params = {}) {
-  const query = new URLSearchParams();
-  if (params.q) query.set("q", params.q);
-  if (params.category) query.set("category", params.category);
-  const qs = query.toString();
-  return request(`/terms/${qs ? `?${qs}` : ""}`);
+  return api.terms.list(params);
 }
-
 export function getTerm(id) {
-  return request(`/terms/${id}`);
+  return api.terms.get(id);
 }
-
 export function createTerm(data) {
-  return request("/terms/", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
+  return api.terms.create(data);
 }
-
-export function recommendDefinition(data) {
-  return request("/terms/recommend-definition", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
 export function updateTerm(id, data) {
-  return request(`/terms/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
+  return api.terms.update(id, data);
 }
-
 export function deleteTerm(id) {
-  return request(`/terms/${id}`, { method: "DELETE" });
+  return api.terms.delete(id);
 }
 
 // ── Definitions (nested under terms) ──
-
 export function createDefinition(termId, data) {
-  return request(`/terms/${termId}/definitions`, {
+  return api.terms.definitions.create(termId, data);
+}
+export function updateDefinition(termId, definitionId, data) {
+  return api.terms.definitions.update(termId, definitionId, data);
+}
+export function deleteDefinition(termId, definitionId) {
+  return api.terms.definitions.delete(termId, definitionId);
+}
+
+// ── Backup / Restore ──
+export function getBackup() {
+  return request("/backup/");
+}
+export function restoreBackup(data) {
+  return request("/backup/restore", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export function updateDefinition(termId, definitionId, data) {
-  return request(`/terms/${termId}/definitions/${definitionId}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
-}
-
-export function deleteDefinition(termId, definitionId) {
-  return request(`/terms/${termId}/definitions/${definitionId}`, {
-    method: "DELETE",
-  });
-}
-
-// ── Backup / Restore ──
-
-export function getBackup() {
-  return request("/backup/");
-}
-
-export function restoreBackup(data) {
-  return request("/backup/restore", {
+// ── Domain-specific: AI Recommendation (app-specific, not auto-generated) ──
+export function recommendDefinition(data) {
+  return request("/terms/recommend-definition", {
     method: "POST",
     body: JSON.stringify(data),
   });
