@@ -28,6 +28,7 @@ RUN uv sync --frozen --no-dev --no-install-project 2>/dev/null || uv sync --no-d
 
 # Copy application code
 COPY app/ app/
+COPY resources/ resources/
 COPY base_data_import/ base_data_import/
 
 # Copy Alembic configuration and migrations
