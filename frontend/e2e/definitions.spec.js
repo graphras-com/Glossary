@@ -24,10 +24,10 @@ test.describe("Definitions CRUD", () => {
     await daTextarea.fill("Kapaciteten af en netværksforbindelse.");
     await page.selectOption("select", { label: "Transmission" });
 
-    await page.click('button:has-text("Add Definition")');
+    await page.click('button:has-text("Create Definition")');
     // Should redirect to the term list
     await expect(page).toHaveURL("/terms");
-    // The term entry should be visible (scrolled into view)
+    // The term entry should be visible
     await expect(page.locator("#term-1")).toBeVisible();
   });
 

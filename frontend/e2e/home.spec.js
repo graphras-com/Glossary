@@ -8,7 +8,7 @@ test.describe("Home page", () => {
 
   test("displays the home page with title and navigation cards", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("h1")).toHaveText("Dictionary API");
+    await expect(page.locator("h1")).toHaveText("Telecom Glossary");
     await expect(page.locator(".home-card")).toHaveCount(2);
     // Use more specific locators to avoid strict mode violations
     await expect(page.locator(".home-card h2:has-text('Terms')")).toBeVisible();
