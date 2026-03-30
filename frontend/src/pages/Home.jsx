@@ -6,11 +6,11 @@
  * table that pastes cleanly into MS Word.
  *
  * The "Generate glossary from text" section lets users paste free text;
- * the backend matches it against existing glossary terms and returns
- * the matching entries, rendered in the same copyable table format.
+ * the backend matches it against existing glossary terms and adds the
+ * matches to the same shared glossary list.
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getTerms, extractGlossary } from "../api/client";
 import { appConfig } from "../config/resources";
 import useGlossaryList from "../hooks/useGlossaryList";
@@ -40,8 +40,7 @@ export default function Home() {
   const [extractText, setExtractText] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState("");
-  const [extractResult, setExtractResult] = useState(null); // list of TermRead
-  const [extractCopied, setExtractCopied] = useState(false);
+  const [extractCount, setExtractCount] = useState(null);
 
   /* Debounced search */
   useEffect(() => {
@@ -94,18 +93,25 @@ export default function Home() {
     }
   }
 
-  /* ── Extract glossary handlers ── */
+  /* ── Extract glossary handler ── */
   async function handleExtract() {
     if (!extractText.trim()) return;
     setExtracting(true);
     setExtractError("");
-    setExtractResult(null);
+    setExtractCount(null);
     try {
       const data = await extractGlossary({ text: extractText.trim() });
       if (data.length === 0) {
         setExtractError("No matching glossary terms found in the text.");
       } else {
-        setExtractResult(data);
+        let added = 0;
+        for (const term of data) {
+          if (!items.some((t) => t.id === term.id)) {
+            addTerm(term);
+            added++;
+          }
+        }
+        setExtractCount({ total: data.length, added });
       }
     } catch (err) {
       setExtractError(err.message || "Failed to extract glossary.");
@@ -114,63 +120,13 @@ export default function Home() {
     }
   }
 
-  /** Build definition text for a term (same logic as the manual list). */
+  /** Build definition text for a term. */
   function defText(term) {
     const defs = term.definitions || [];
     return defs
       .map((d) => d[language] || "")
       .filter(Boolean)
       .join("; ");
-  }
-
-  const handleExtractCopy = useCallback(async () => {
-    if (!extractResult || extractResult.length === 0) return;
-    const label = language === "en" ? "Definition (English)" : "Definition (Danish)";
-    const rows = extractResult
-      .map((term) => {
-        const text = defText(term);
-        return (
-          `<tr>` +
-          `<td style="border:1px solid #ccc;padding:6px 10px;font-weight:bold;">${escapeHtml(term.term)}</td>` +
-          `<td style="border:1px solid #ccc;padding:6px 10px;">${escapeHtml(text)}</td>` +
-          `</tr>`
-        );
-      })
-      .join("");
-
-    const html =
-      `<table style="border-collapse:collapse;width:100%;font-family:Calibri,Arial,sans-serif;font-size:11pt;">` +
-      `<thead><tr>` +
-      `<th style="border:1px solid #ccc;padding:6px 10px;background:#f0f0f0;text-align:left;">Term</th>` +
-      `<th style="border:1px solid #ccc;padding:6px 10px;background:#f0f0f0;text-align:left;">${label}</th>` +
-      `</tr></thead>` +
-      `<tbody>${rows}</tbody>` +
-      `</table>`;
-
-    const plain = [
-      `Term\t${label}`,
-      ...extractResult.map((term) => `${term.term}\t${defText(term)}`),
-    ].join("\n");
-
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/html": new Blob([html], { type: "text/html" }),
-          "text/plain": new Blob([plain], { type: "text/plain" }),
-        }),
-      ]);
-      setExtractCopied(true);
-      setTimeout(() => setExtractCopied(false), 2000);
-    } catch {
-      // clipboard write failed
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [extractResult, language]);
-
-  function handleExtractClear() {
-    setExtractText("");
-    setExtractResult(null);
-    setExtractError("");
   }
 
   const langLabel = language === "en" ? "Definition (English)" : "Definition (Danish)";
@@ -243,6 +199,71 @@ export default function Home() {
         </select>
       </div>
 
+      {/* ── Generate glossary from text ── */}
+      <div className="extract-section">
+        <button
+          className="extract-toggle"
+          onClick={() => setExtractOpen((v) => !v)}
+        >
+          <span className={`extract-toggle-arrow ${extractOpen ? "open" : ""}`}>&#9654;</span>
+          Generate glossary from text
+        </button>
+
+        {extractOpen && (
+          <div className="extract-body">
+            <p className="extract-description">
+              Paste or type text below to find matching glossary terms and
+              add them to your list.
+            </p>
+            <textarea
+              className="input extract-textarea"
+              placeholder="Paste your text here..."
+              value={extractText}
+              onChange={(e) => {
+                setExtractText(e.target.value);
+                setExtractCount(null);
+                setExtractError("");
+              }}
+              rows={6}
+            />
+            <div className="extract-actions">
+              <button
+                className="btn btn-primary"
+                onClick={handleExtract}
+                disabled={extracting || !extractText.trim()}
+              >
+                {extracting ? "Searching..." : "Generate glossary"}
+              </button>
+              {extractText && (
+                <button
+                  className="btn"
+                  onClick={() => {
+                    setExtractText("");
+                    setExtractError("");
+                    setExtractCount(null);
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {extractError && (
+              <p className="extract-error">{extractError}</p>
+            )}
+
+            {extractCount !== null && (
+              <p className="extract-success">
+                Found {extractCount.total} {extractCount.total === 1 ? "term" : "terms"}
+                {extractCount.added < extractCount.total
+                  ? ` (${extractCount.added} new, ${extractCount.total - extractCount.added} already in list)`
+                  : ""}.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ── Glossary list table ── */}
       {items.length > 0 ? (
         <>
@@ -287,83 +308,9 @@ export default function Home() {
         </>
       ) : (
         <p className="empty">
-          Search for terms above and add them to build your glossary list.
+          Search for terms above or generate from text to build your glossary list.
         </p>
       )}
-
-      {/* ── Generate glossary from text ── */}
-      <div className="extract-section">
-        <button
-          className="extract-toggle"
-          onClick={() => setExtractOpen((v) => !v)}
-        >
-          <span className={`extract-toggle-arrow ${extractOpen ? "open" : ""}`}>&#9654;</span>
-          Generate glossary from text
-        </button>
-
-        {extractOpen && (
-          <div className="extract-body">
-            <p className="extract-description">
-              Paste or type text below to find matching glossary terms and
-              build a glossary list automatically.
-            </p>
-            <textarea
-              className="input extract-textarea"
-              placeholder="Paste your text here..."
-              value={extractText}
-              onChange={(e) => setExtractText(e.target.value)}
-              rows={6}
-            />
-            <div className="extract-actions">
-              <button
-                className="btn btn-primary"
-                onClick={handleExtract}
-                disabled={extracting || !extractText.trim()}
-              >
-                {extracting ? "Searching..." : "Generate glossary"}
-              </button>
-              {(extractText || extractResult) && (
-                <button className="btn" onClick={handleExtractClear}>
-                  Clear
-                </button>
-              )}
-            </div>
-
-            {extractError && (
-              <p className="extract-error">{extractError}</p>
-            )}
-
-            {extractResult && extractResult.length > 0 && (
-              <>
-                <div className="builder-actions">
-                  <button className="btn btn-primary" onClick={handleExtractCopy}>
-                    {extractCopied ? "Copied!" : "Copy to clipboard"}
-                  </button>
-                </div>
-                <table className="table builder-table">
-                  <thead>
-                    <tr>
-                      <th>Term</th>
-                      <th>{langLabel}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {extractResult.map((term) => {
-                      const text = defText(term);
-                      return (
-                        <tr key={term.id}>
-                          <td className="builder-cell-term">{term.term}</td>
-                          <td>{text || <span className="muted">No {language === "en" ? "English" : "Danish"} definition</span>}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -371,12 +318,4 @@ export default function Home() {
 function truncate(str, max) {
   if (!str) return "";
   return str.length > max ? str.slice(0, max) + "..." : str;
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }

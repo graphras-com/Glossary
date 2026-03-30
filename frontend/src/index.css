@@ -653,6 +653,12 @@ select.input {
   margin-top: 10px;
 }
 
+.extract-success {
+  color: var(--primary, #2980b9);
+  font-size: 14px;
+  margin-top: 10px;
+}
+
 /* ── Glossary ── */
 
 .glossary {
