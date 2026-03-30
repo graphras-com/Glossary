@@ -220,3 +220,6 @@ frontend/test-results/
 
 # Static dir (populated by Docker build)
 static/
+
+
+.opencode/*
