@@ -54,12 +54,14 @@ steps:
         HOST="staging-$${APP_NAME}.$${ORG_DNS}"
         TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
 
-        _SOURCE_SHA="$${CI_PIPELINE_VARIABLE_SOURCE_COMMIT_SHA:-$${CI_COMMIT_SHA:-}}"
+        _SOURCE_SHA="$${CI_PIPELINE_VARIABLE_SOURCE_COMMIT_SHA:-}"
         if [ -n "$_SOURCE_SHA" ]; then
           IMAGE_TAG="sha-$(printf '%.7s' "$_SOURCE_SHA")"
         else
           IMAGE_TAG="staging"
         fi
+
+        DEPLOY_TS="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
         DB_NAME="$$(printf '%s' "$APP_NAME" | tr '-' '_')_staging"
 
@@ -71,6 +73,7 @@ steps:
             -e "s#__IMAGE_TAG__#$${IMAGE_TAG}#g" \
             -e "s#__HOST__#$${HOST}#g" \
             -e "s#__TLS_SECRET__#$${TLS_SECRET}#g" \
+            -e "s#__DEPLOY_TS__#$${DEPLOY_TS}#g" \
             | kubectl apply -f -
         }
 
@@ -141,6 +144,8 @@ steps:
           "    metadata:" \
           "      labels:" \
           "        app: __APP_NAME__" \
+          "      annotations:" \
+          "        deploy-timestamp: \"__DEPLOY_TS__\"" \
           "    spec:" \
           "      imagePullSecrets:" \
           "        - name: ghcr-creds" \
@@ -230,5 +235,4 @@ steps:
           "      secretName: __TLS_SECRET__" \
           | render_apply
 
-        kubectl -n "$NAMESPACE" rollout restart deployment/"$APP_NAME"
         kubectl -n "$NAMESPACE" rollout status deployment/"$APP_NAME" --timeout=180s
