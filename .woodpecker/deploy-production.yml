@@ -1,3 +1,7 @@
+clone:
+  git:
+    disable: true
+
 steps:
   deploy-production:
     image: bitnami/kubectl:latest
@@ -52,11 +56,9 @@ steps:
         TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
         IMAGE_TAG="$${CI_COMMIT_TAG:-latest}"
 
-        # Database name uses underscores (valid PG identifier)
         DB_NAME="$$(printf '%s' "$APP_NAME" | tr '-' '_')_prod"
 
         render_apply() {
-          file="$1"
           sed \
             -e "s#__APP_NAME__#$${APP_NAME}#g" \
             -e "s#__NAMESPACE__#$${NAMESPACE}#g" \
@@ -64,32 +66,163 @@ steps:
             -e "s#__IMAGE_TAG__#$${IMAGE_TAG}#g" \
             -e "s#__HOST__#$${HOST}#g" \
             -e "s#__TLS_SECRET__#$${TLS_SECRET}#g" \
-            "$file" | kubectl apply -f -
+            | kubectl apply -f -
         }
 
         # --- Namespace and registry credentials ---
-        render_apply k8s/production/namespace.yaml
-        kubectl -n "$NAMESPACE" create secret docker-registry ghcr-creds --docker-server=ghcr.io --docker-username="$GHCR_USERNAME" --docker-password="$GHCR_TOKEN" --dry-run=client -o yaml | kubectl apply -f -
+        printf '%s\n' \
+          "apiVersion: v1" \
+          "kind: Namespace" \
+          "metadata:" \
+          "  name: __NAMESPACE__" \
+          | render_apply
+        kubectl -n "$NAMESPACE" create secret docker-registry ghcr-creds \
+          --docker-server=ghcr.io \
+          --docker-username="$GHCR_USERNAME" \
+          --docker-password="$GHCR_TOKEN" \
+          --dry-run=client -o yaml | kubectl apply -f -
 
         # --- CloudNativePG: create database in the shared cluster (default ns) ---
-        render_apply k8s/production/cnpg-database.yaml
+        printf '%s\n' \
+          "apiVersion: postgresql.cnpg.io/v1" \
+          "kind: Database" \
+          "metadata:" \
+          "  name: __APP_NAME__-prod-db" \
+          "  namespace: default" \
+          "spec:" \
+          "  name: __APP_NAME___prod" \
+          "  owner: app" \
+          "  cluster:" \
+          "    name: pg" \
+          | render_apply
 
         # --- Build DATABASE_URL from the CNPG cluster's app secret ---
         PGUSER="$(kubectl -n default get secret pg-app -o jsonpath='{.data.username}' | base64 -d)"
         PGPASS="$(kubectl -n default get secret pg-app -o jsonpath='{.data.password}' | base64 -d)"
         PGHOST="pg-rw.default.svc"
         PGPORT="5432"
-
         DATABASE_URL="postgresql://$${PGUSER}:$${PGPASS}@$${PGHOST}:$${PGPORT}/$${DB_NAME}"
-
-        # Create the db-credentials secret in the app namespace
         kubectl -n "$NAMESPACE" create secret generic "$${APP_NAME}-db-credentials" \
           --from-literal="DATABASE_URL=$${DATABASE_URL}" \
           --dry-run=client -o yaml | kubectl apply -f -
 
-        # --- Apply remaining manifests ---
-        render_apply k8s/production/configmap.yaml
-        render_apply k8s/production/deployment.yaml
-        render_apply k8s/production/service.yaml
-        render_apply k8s/production/ingress.yaml
+        # --- ConfigMap ---
+        printf '%s\n' \
+          "apiVersion: v1" \
+          "kind: ConfigMap" \
+          "metadata:" \
+          "  name: __APP_NAME__-config" \
+          "  namespace: __NAMESPACE__" \
+          "data:" \
+          '  AUTH_DISABLED: "false"' \
+          '  TENANT_ID: "3a680226-db04-4df3-95bd-37b631e11597"' \
+          '  API_AUDIENCE: "api://d9785590-322c-48e6-ba58-a00aabb5aee5"' \
+          '  CORS_ALLOWED_ORIGINS: "https://__HOST__"' \
+          | render_apply
+
+        # --- Deployment ---
+        printf '%s\n' \
+          "apiVersion: apps/v1" \
+          "kind: Deployment" \
+          "metadata:" \
+          "  name: __APP_NAME__" \
+          "  namespace: __NAMESPACE__" \
+          "spec:" \
+          "  replicas: 1" \
+          "  selector:" \
+          "    matchLabels:" \
+          "      app: __APP_NAME__" \
+          "  template:" \
+          "    metadata:" \
+          "      labels:" \
+          "        app: __APP_NAME__" \
+          "    spec:" \
+          "      imagePullSecrets:" \
+          "        - name: ghcr-creds" \
+          "      containers:" \
+          "        - name: __APP_NAME__" \
+          "          image: ghcr.io/__ORG_GHCR__/__APP_NAME__:__IMAGE_TAG__" \
+          "          imagePullPolicy: Always" \
+          "          ports:" \
+          "            - containerPort: 8000" \
+          "          envFrom:" \
+          "            - configMapRef:" \
+          "                name: __APP_NAME__-config" \
+          "          env:" \
+          "            - name: DATABASE_URL" \
+          "              valueFrom:" \
+          "                secretKeyRef:" \
+          "                  name: __APP_NAME__-db-credentials" \
+          "                  key: DATABASE_URL" \
+          "          startupProbe:" \
+          "            httpGet:" \
+          "              path: /health" \
+          "              port: 8000" \
+          "            initialDelaySeconds: 5" \
+          "            periodSeconds: 5" \
+          "            failureThreshold: 30" \
+          "          readinessProbe:" \
+          "            httpGet:" \
+          "              path: /health" \
+          "              port: 8000" \
+          "            periodSeconds: 10" \
+          "          livenessProbe:" \
+          "            httpGet:" \
+          "              path: /health" \
+          "              port: 8000" \
+          "            periodSeconds: 30" \
+          "          resources:" \
+          "            requests:" \
+          "              cpu: 100m" \
+          "              memory: 256Mi" \
+          "            limits:" \
+          "              cpu: 500m" \
+          "              memory: 512Mi" \
+          | render_apply
+
+        # --- Service ---
+        printf '%s\n' \
+          "apiVersion: v1" \
+          "kind: Service" \
+          "metadata:" \
+          "  name: __APP_NAME__" \
+          "  namespace: __NAMESPACE__" \
+          "spec:" \
+          "  selector:" \
+          "    app: __APP_NAME__" \
+          "  ports:" \
+          "    - name: http" \
+          "      port: 80" \
+          "      targetPort: 8000" \
+          | render_apply
+
+        # --- Ingress ---
+        printf '%s\n' \
+          "apiVersion: networking.k8s.io/v1" \
+          "kind: Ingress" \
+          "metadata:" \
+          "  name: __APP_NAME__" \
+          "  namespace: __NAMESPACE__" \
+          "  annotations:" \
+          "    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure" \
+          '    traefik.ingress.kubernetes.io/router.tls: "true"' \
+          "spec:" \
+          "  ingressClassName: traefik" \
+          "  rules:" \
+          "    - host: __HOST__" \
+          "      http:" \
+          "        paths:" \
+          "          - path: /" \
+          "            pathType: Prefix" \
+          "            backend:" \
+          "              service:" \
+          "                name: __APP_NAME__" \
+          "                port:" \
+          "                  number: 80" \
+          "  tls:" \
+          "    - hosts:" \
+          "        - __HOST__" \
+          "      secretName: __TLS_SECRET__" \
+          | render_apply
+
         kubectl -n "$NAMESPACE" rollout status deployment/"$APP_NAME" --timeout=180s
