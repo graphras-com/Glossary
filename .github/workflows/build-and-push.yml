@@ -62,3 +62,7 @@ jobs:
             VITE_CLIENT_ID=213d5d77-c055-4163-8e6a-56a666a924d2
             VITE_TENANT_ID=3a680226-db04-4df3-95bd-37b631e11597
             VITE_API_SCOPE=api://d9785590-322c-48e6-ba58-a00aabb5aee5/access_as_user
+            VITE_BUILD_COMMIT=${{ github.sha }}
+            VITE_BUILD_TAG=${{ github.ref_type == 'tag' && github.ref_name || '' }}
+            VITE_BUILD_BRANCH=${{ github.ref_name }}
+            VITE_BUILD_TIME=${{ github.event.head_commit.timestamp || github.event.repository.updated_at }}

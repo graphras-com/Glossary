@@ -17,6 +17,12 @@ function apiOnly(req) {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __BUILD_COMMIT__:  JSON.stringify(process.env.VITE_BUILD_COMMIT  || 'dev'),
+    __BUILD_TAG__:     JSON.stringify(process.env.VITE_BUILD_TAG     || ''),
+    __BUILD_TIME__:    JSON.stringify(process.env.VITE_BUILD_TIME    || new Date().toISOString()),
+    __BUILD_BRANCH__:  JSON.stringify(process.env.VITE_BUILD_BRANCH  || 'local'),
+  },
   build: {
     rollupOptions: {
       input: {

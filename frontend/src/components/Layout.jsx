@@ -9,6 +9,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import { getNavResources, appConfig } from "../config/resources";
+import VersionBar from "./VersionBar";
 
 export default function Layout() {
   const { instance, accounts } = useMsal();
@@ -74,6 +75,7 @@ export default function Layout() {
       <main className="container">
         <Outlet />
       </main>
+      <VersionBar />
     </div>
   );
 }

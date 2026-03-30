@@ -13,6 +13,12 @@ ARG VITE_CLIENT_ID=""
 ARG VITE_TENANT_ID=""
 ARG VITE_API_SCOPE=""
 
+# Build metadata — injected by CI/CD or docker build.
+ARG VITE_BUILD_COMMIT=""
+ARG VITE_BUILD_TAG=""
+ARG VITE_BUILD_BRANCH=""
+ARG VITE_BUILD_TIME=""
+
 RUN npm run build
 
 # ── Stage 2: Python runtime with FastAPI + built frontend ─────────
