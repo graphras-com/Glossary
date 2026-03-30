@@ -4,230 +4,84 @@
 
 A full-stack bilingual telecom glossary application for browsing, searching, and managing telecommunications terminology with English and Danish definitions, organized into hierarchical categories.
 
+Built on a **generic CRUD framework** -- domain entities are declared in configuration files and the framework auto-generates backend routers, API client functions, and frontend pages.
+
 ## Features
 
 - **Bilingual definitions** -- every term supports English (required) and Danish (optional) definitions
-- **Hierarchical categories** -- dot-notation taxonomy (e.g. `network.mobile`) with breadcrumb display
+- **Hierarchical categories** -- dot-notation taxonomy (e.g. `network.mobile`) with parent-child relationships
 - **Search and filter** -- real-time text search by term name with category dropdown filter
-- **PDF export** -- generates an A4 glossary PDF with a clickable letter index, grouped headings, and bilingual definitions
+- **AI-powered recommendations** -- generate English and Danish definition suggestions via OpenAI
+- **Glossary extraction** -- find existing glossary terms in free text (word-boundary matching)
+- **PDF export** -- generate an A4 glossary PDF with a clickable letter index, grouped headings, and bilingual definitions
 - **Backup and restore** -- download the entire database as JSON or upload a JSON file to restore it
 - **Full CRUD** -- create, read, update, and delete terms, definitions, and categories
-- **Seed data** -- ships with 18 telecom categories and 165 terms covering concepts like LTE, SIM Card, Backhaul, MPLS, and more
+- **Microsoft Entra ID authentication** -- OIDC + OAuth 2.0 with PKCE, RBAC roles, and JWT validation
+- **Seed data** -- ships with 18 telecom categories and 165 terms
 
 ## Tech Stack
 
-| Layer     | Technology                                          |
-|-----------|-----------------------------------------------------|
-| Backend   | Python 3.11+, FastAPI, SQLAlchemy 2 (async), SQLite |
-| Frontend  | React 19, React Router 7, Vite 8                    |
-| PDF       | jsPDF + jspdf-autotable                              |
-| Testing   | pytest, Vitest, Playwright                           |
-| Packaging | uv (Python), npm (Node)                              |
-| Container | Docker (multi-stage) + Docker Compose                |
+| Layer      | Technology                                               |
+|------------|----------------------------------------------------------|
+| Backend    | Python 3.11+, FastAPI, SQLAlchemy 2 (async), Pydantic v2 |
+| Database   | SQLite (local dev / Docker) or PostgreSQL (production)   |
+| Frontend   | React 19, React Router 7, Vite 8                        |
+| Auth       | Microsoft Entra ID (MSAL.js + PyJWT)                    |
+| PDF        | jsPDF + jspdf-autotable (client-side)                    |
+| Testing    | pytest (125 tests), Vitest, Playwright                   |
+| Packaging  | uv (Python), npm (Node)                                  |
+| Container  | Docker (multi-stage, multi-platform) + Docker Compose    |
+| CI/CD      | GitHub Actions + Woodpecker CI                           |
+| Deployment | Kubernetes (k3s) with Traefik + CloudNativePG            |
 
-## Project Structure
-
-```
-.
-├── app/                        # FastAPI backend
-│   ├── main.py                 # App entrypoint, lifespan, middleware
-│   ├── database.py             # Async SQLAlchemy engine + session
-│   ├── models.py               # ORM models (Category, Term, Definition)
-│   ├── schemas.py              # Pydantic request/response schemas
-│   ├── seed.py                 # Auto-seeds DB from glossary-seed.json
-│   └── routers/
-│       ├── categories.py       # /categories endpoints
-│       ├── terms.py            # /terms + /terms/{id}/definitions endpoints
-│       └── backup.py           # /backup and /backup/restore endpoints
-├── frontend/                   # React SPA
-│   ├── src/
-│   │   ├── api/client.js       # Fetch-based API client
-│   │   ├── pages/              # Route pages (Home, TermList, CategoryList, etc.)
-│   │   ├── components/         # Shared UI components
-│   │   ├── hooks/              # Custom React hooks
-│   │   └── pdf/                # Client-side PDF generation
-│   └── e2e/                    # Playwright end-to-end tests
-├── base_data_import/           # glossary-seed.json seed data
-├── tests/                      # Backend pytest suite
-├── Dockerfile                  # Multi-stage build (Node + Python)
-├── docker-compose.yml          # Single-service compose with volume
-└── pyproject.toml              # Python project config and tooling
-```
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
 - Python 3.11+ with [uv](https://docs.astral.sh/uv/)
 - Node.js 22+ with npm
-- Docker + Docker Compose (for containerized deployment)
 
-### Local Development
-
-**Backend:**
+### Backend
 
 ```bash
-# Install Python dependencies
 uv sync
-
-# Start the API server on port 8000
+cp .env.example .env
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
-The database is created automatically on first launch and seeded with the telecom glossary data.
+The database is created automatically on first launch and seeded with telecom glossary data.
 
-**Frontend:**
+### Frontend
 
 ```bash
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start the dev server on port 5173 (proxies API calls to port 8000)
 npm run dev
 ```
 
-Open <http://localhost:5173> to use the app in development mode.
+Open <http://localhost:5173>. The dev server proxies API calls to port 8000.
 
 ### Docker
 
 ```bash
-# Build and start the container
 docker compose up --build -d
 ```
 
-The app is served at <http://localhost:8000>. The SQLite database is persisted in a Docker named volume (`glossary-data`).
+The app is served at <http://localhost:5173> (mapped from container port 8000). The SQLite database is persisted in a Docker named volume.
 
-## API Endpoints
+## Documentation
 
-| Method   | Path                                | Description                        |
-|----------|-------------------------------------|------------------------------------|
-| `GET`    | `/health`                           | Health check                       |
-| `GET`    | `/categories/`                      | List all categories                |
-| `GET`    | `/categories/{id}`                  | Get a single category              |
-| `POST`   | `/categories/`                      | Create a category                  |
-| `PATCH`  | `/categories/{id}`                  | Update a category                  |
-| `DELETE` | `/categories/{id}`                  | Delete a category                  |
-| `GET`    | `/terms/`                           | List terms (`?q=` search, `?category=` filter) |
-| `GET`    | `/terms/{id}`                       | Get a term with its definitions    |
-| `POST`   | `/terms/`                           | Create a term with definitions     |
-| `PATCH`  | `/terms/{id}`                       | Update a term name                 |
-| `DELETE` | `/terms/{id}`                       | Delete a term and its definitions  |
-| `POST`   | `/terms/recommend-definition`       | Generate EN/DA definition suggestion for one term |
-| `POST`   | `/terms/{id}/definitions`           | Add a definition to a term         |
-| `PATCH`  | `/terms/{id}/definitions/{def_id}`  | Update a definition                |
-| `DELETE` | `/terms/{id}/definitions/{def_id}`  | Delete a definition                |
-| `GET`    | `/backup/`                          | Export all data as JSON            |
-| `POST`   | `/backup/restore`                   | Replace all data from JSON upload  |
+| Document | Description |
+|----------|-------------|
+| [Architecture](docs/architecture.md) | System design, generic CRUD framework, data model |
+| [Setup](docs/setup.md) | Installation and local development |
+| [Configuration](docs/configuration.md) | Environment variables reference |
+| [API](docs/api.md) | REST API endpoints and data model |
+| [Authentication](docs/authentication.md) | Microsoft Entra ID setup and auth flows |
+| [Development](docs/development.md) | Coding conventions, adding entities, linting |
+| [Testing](docs/testing.md) | Backend, frontend unit, and E2E testing |
+| [Deployment](docs/deployment.md) | Docker, Kubernetes, CI/CD pipelines |
 
-## Data Model
+## License
 
-```
-Category (string ID, dot-notation)
-  └── parent_id → Category (self-referencing hierarchy)
-
-Term (integer ID, unique name)
-  └── Definition (integer ID)
-        ├── text_en (required)
-        ├── text_da (optional)
-        └── category_id → Category
-```
-
-A term can have multiple definitions, each belonging to a different category.
-
-## Environment Variables
-
-| Variable        | Default                            | Description                |
-|-----------------|------------------------------------|----------------------------|
-| `DATABASE_PATH` | `./dictionary.db` (local), `/data/dictionary.db` (Docker) | Path to SQLite database |
-| `OPENAI_API_KEY` | *(none)* | OpenAI API key used by backend definition recommendations |
-| `OPENAI_RECOMMENDATION_MODEL` | `gpt-4.1-mini` | Model used for definition recommendations |
-| `OPENAI_API_URL` | `https://api.openai.com/v1/chat/completions` | OpenAI API endpoint override |
-
-## Testing
-
-**Backend:**
-
-```bash
-# Run the full backend test suite (~68 tests)
-uv run pytest
-```
-
-**Frontend unit tests:**
-
-```bash
-cd frontend
-npm run test:unit
-```
-
-**Frontend end-to-end tests** (requires backend and frontend running):
-
-```bash
-cd frontend
-npm run test           # headless
-npm run test:headed    # with visible browser
-```
-
-## Linting
-
-```bash
-# Python (ruff)
-uv run ruff check .
-uv run ruff format .
-
-# JavaScript (eslint)
-cd frontend && npm run lint
-```
-
-## k3s Deploy (Woodpecker + Traefik)
-
-The repository includes two Woodpecker pipeline files:
-
-- `.woodpecker/deploy-staging.yml` for staging
-- `.woodpecker/deploy-production.yml` for production releases
-
-- staging deploys to namespace `<org-prefix>-staging` at `staging-<app>.<org-domain>`
-- tag builds (release tags) deploy to namespace `<org-prefix>-prod` at `<app>.<org-domain>`
-
-Staging trigger model:
-
-- GitHub Actions builds and pushes images on `main`.
-- After `docker-push` succeeds, GitHub triggers Woodpecker via API.
-- Woodpecker staging workflow is manual/API-triggered (not push-triggered) to avoid race conditions.
-
-If your Woodpecker repo is configured with a single custom config path, make sure both pipeline files are loaded (or update the config setting accordingly).
-
-Kubernetes manifests are split by environment:
-
-- `k8s/staging/` for staging
-- `k8s/production/` for production
-
-### Required Woodpecker Secrets
-
-- `KUBECONFIG_B64` -- base64-encoded kubeconfig with access to the k3s cluster
-- `GHCR_USERNAME` -- GitHub username (or robot user) with pull access
-- `GHCR_TOKEN` -- GitHub token with `read:packages`
-
-Image behavior:
-
-- Staging deploys `ghcr.io/<org-ghcr>/<app>:staging` and forces a rollout restart.
-- Production deploys tag image `ghcr.io/<org-ghcr>/<app>:${CI_COMMIT_TAG}`.
-
-Required GitHub Actions secrets for staging trigger:
-
-- `WOODPECKER_SERVER` -- base URL of your Woodpecker server
-- `WOODPECKER_TOKEN` -- Woodpecker PAT with pipeline trigger access
-- `WOODPECKER_REPO` -- optional repo override (`owner/repo`), defaults to current GitHub repo
-- `WOODPECKER_REPO_ID` -- optional numeric Woodpecker repo id (recommended to skip lookup)
-
-If `WOODPECKER_SERVER` or `WOODPECKER_TOKEN` is missing, the trigger job is skipped.
-
-### TLS Note
-
-Ingress expects TLS secret naming generated from hostnames:
-
-- staging: `staging-<app>-<org-domain-with-dashes>-tls`
-- production: `<app>-<org-domain-with-dashes>-tls`
-
-If you use cert-manager, issue these secrets from your ClusterIssuer; otherwise create them manually.
+Internal project -- see repository access settings.
