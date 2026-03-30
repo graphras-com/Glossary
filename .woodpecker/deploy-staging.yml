@@ -54,7 +54,7 @@ steps:
         HOST="staging-$${APP_NAME}.$${ORG_DNS}"
         TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
 
-        _SOURCE_SHA="$${CI_PIPELINE_VARIABLE_SOURCE_COMMIT_SHA:-}"
+        _SOURCE_SHA="$${CI_PIPELINE_VARIABLE_SOURCE_COMMIT_SHA:-$${CI_COMMIT_SHA:-}}"
         if [ -n "$_SOURCE_SHA" ]; then
           IMAGE_TAG="sha-$(printf '%.7s' "$_SOURCE_SHA")"
         else
