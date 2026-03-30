@@ -68,6 +68,26 @@ class DefinitionRecommendResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Glossary extraction from free text
+# ---------------------------------------------------------------------------
+
+
+class GlossaryExtractRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=50000)
+
+
+class GlossaryExtractEntry(BaseModel):
+    term: str
+    en: str
+    da: str
+
+
+class GlossaryExtractResponse(BaseModel):
+    terms: list[GlossaryExtractEntry]
+    model: str
+
+
+# ---------------------------------------------------------------------------
 # Term
 # ---------------------------------------------------------------------------
 
