@@ -1,6 +1,4 @@
-clone:
-  git:
-    disable: true
+skip_clone: true
 
 steps:
   deploy-production:
