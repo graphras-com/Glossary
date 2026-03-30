@@ -554,16 +554,18 @@ select.input {
   font-size: 14px;
 }
 
-.builder-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 16px;
+.builder-divider {
+  max-width: 900px;
+  margin: 32px auto 0;
+  border: none;
+  border-top: 1px solid var(--border);
 }
 
 .builder-table {
-  max-width: 700px;
+  width: 100%;
+  max-width: 900px;
   margin: 0 auto;
+  margin-top: 16px;
   text-align: left;
 }
 
@@ -573,10 +575,18 @@ select.input {
 }
 
 .builder-col-actions {
-  width: 80px;
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
 }
 
-.builder-cell-remove {
+.builder-header-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.builder-table .builder-cell-remove {
   text-align: right;
 }
 

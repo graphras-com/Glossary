@@ -267,21 +267,23 @@ export default function Home() {
       {/* ── Glossary list table ── */}
       {items.length > 0 ? (
         <>
-          <div className="builder-actions">
-            <button className="btn btn-primary" onClick={handleCopy}>
-              {copied ? "Copied!" : "Copy to clipboard"}
-            </button>
-            <button className="btn btn-danger" onClick={clearList}>
-              Clear list
-            </button>
-          </div>
+          <hr className="builder-divider" />
 
           <table className="table builder-table">
             <thead>
               <tr>
                 <th>Term</th>
                 <th>{langLabel}</th>
-                <th className="builder-col-actions" />
+                <th className="builder-col-actions">
+                  <div className="builder-header-actions">
+                    <button className="btn btn-sm btn-primary" onClick={handleCopy}>
+                      {copied ? "Copied!" : "Copy"}
+                    </button>
+                    <button className="btn btn-sm btn-danger" onClick={clearList}>
+                      Clear list
+                    </button>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
