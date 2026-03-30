@@ -1,9 +1,7 @@
-"""Tests for the extract-glossary endpoint."""
+"""Tests for the extract-glossary endpoint (DB-based text matching)."""
 
 import pytest
 from httpx import AsyncClient
-
-from app.services.openai_recommendation import RecommendationServiceError
 
 # =========================================================================
 # EXTRACT GLOSSARY
@@ -11,38 +9,83 @@ from app.services.openai_recommendation import RecommendationServiceError
 
 
 @pytest.mark.asyncio
-async def test_extract_glossary_success(client: AsyncClient, monkeypatch):
-    async def fake_extract(text: str):
-        assert "LTE" in text
-        return [
-            {
-                "term": "LTE",
-                "en": "Long Term Evolution, a 4G standard.",
-                "da": "Long Term Evolution, en 4G-standard.",
-            },
-            {
-                "term": "RSSI",
-                "en": "Received Signal Strength Indicator.",
-                "da": "Modtaget signalstyrkeindikator.",
-            },
-        ]
-
-    monkeypatch.setattr(
-        "resources.routers.extract_glossary.extract_glossary", fake_extract
-    )
-
+async def test_extract_glossary_finds_matching_terms(
+    client: AsyncClient,
+    seed_term,
+):
+    """Terms present in the text should be returned with their definitions."""
     r = await client.post(
         "/terms/extract-glossary",
-        json={"text": "The LTE network uses RSSI for signal measurement."},
+        json={"text": "The LTE network is widely deployed."},
     )
     assert r.status_code == 200
     body = r.json()
-    assert len(body["terms"]) == 2
-    assert body["terms"][0]["term"] == "LTE"
-    assert body["terms"][0]["en"] == "Long Term Evolution, a 4G standard."
-    assert body["terms"][0]["da"] == "Long Term Evolution, en 4G-standard."
-    assert body["terms"][1]["term"] == "RSSI"
-    assert "model" in body
+    assert len(body) == 1
+    assert body[0]["term"] == "LTE"
+    assert len(body[0]["definitions"]) == 2
+
+
+@pytest.mark.asyncio
+async def test_extract_glossary_case_insensitive(
+    client: AsyncClient,
+    seed_term,
+):
+    """Matching should be case-insensitive."""
+    r = await client.post(
+        "/terms/extract-glossary",
+        json={"text": "We measured lte coverage today."},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body) == 1
+    assert body[0]["term"] == "LTE"
+
+
+@pytest.mark.asyncio
+async def test_extract_glossary_no_matches(
+    client: AsyncClient,
+    seed_term,
+):
+    """When no terms match, an empty list is returned."""
+    r = await client.post(
+        "/terms/extract-glossary",
+        json={"text": "This text has nothing relevant."},
+    )
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+@pytest.mark.asyncio
+async def test_extract_glossary_multiple_terms(
+    client: AsyncClient,
+    seed_categories,
+):
+    """Multiple matching terms are returned alphabetically."""
+    await client.post(
+        "/terms/",
+        json={
+            "term": "5G",
+            "definitions": [{"en": "Fifth generation", "category_id": "network"}],
+        },
+    )
+    await client.post(
+        "/terms/",
+        json={
+            "term": "LTE",
+            "definitions": [
+                {"en": "Long Term Evolution", "category_id": "network.mobile"},
+            ],
+        },
+    )
+    r = await client.post(
+        "/terms/extract-glossary",
+        json={"text": "Both LTE and 5G are mobile standards."},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body) == 2
+    terms = [t["term"] for t in body]
+    assert terms == ["5G", "LTE"]  # alphabetical
 
 
 @pytest.mark.asyncio
@@ -58,26 +101,35 @@ async def test_extract_glossary_missing_text_422(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_extract_glossary_provider_error_503(client: AsyncClient, monkeypatch):
-    async def fake_extract(text: str):
-        raise RecommendationServiceError("AI provider returned an error")
-
-    monkeypatch.setattr(
-        "resources.routers.extract_glossary.extract_glossary", fake_extract
-    )
-
-    r = await client.post(
-        "/terms/extract-glossary",
-        json={"text": "Some telecom text about 5G."},
-    )
-    assert r.status_code == 503
-    assert r.json()["detail"] == "AI provider returned an error"
-
-
-@pytest.mark.asyncio
 async def test_extract_glossary_text_too_long_422(client: AsyncClient):
     r = await client.post(
         "/terms/extract-glossary",
         json={"text": "x" * 50001},
     )
     assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_extract_glossary_word_boundary(
+    client: AsyncClient,
+    seed_categories,
+):
+    """Terms should only match on word boundaries, not as substrings."""
+    await client.post(
+        "/terms/",
+        json={
+            "term": "SIM",
+            "definitions": [
+                {"en": "Subscriber Identity Module", "category_id": "network"},
+            ],
+        },
+    )
+    # "SIMPLE" contains "SIM" but should not match
+    r = await client.post(
+        "/terms/extract-glossary",
+        json={"text": "This is a SIMPLE test without a SIM card."},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body) == 1
+    assert body[0]["term"] == "SIM"

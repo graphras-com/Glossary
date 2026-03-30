@@ -1,17 +1,20 @@
-"""Custom router: AI-powered glossary extraction from free text.
+"""Custom router: extract matching glossary terms from free text.
 
-Accepts a block of text and returns a list of telecom glossary terms
-with definitions in English and Danish.
+Accepts a block of text and returns all database terms whose names
+appear in the text (case-insensitive substring match).  No AI is
+involved — this purely matches against the existing glossary.
 """
 
-import os
+import re
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import require_auth
-from app.services.openai_glossary_extract import extract_glossary
-from app.services.openai_recommendation import RecommendationServiceError
-from resources.schemas import GlossaryExtractRequest, GlossaryExtractResponse
+from app.database import get_db
+from resources.models import TermModel
+from resources.schemas import GlossaryExtractRequest, TermRead
 
 router = APIRouter(
     prefix="/terms",
@@ -20,14 +23,22 @@ router = APIRouter(
 )
 
 
-@router.post("/extract-glossary", response_model=GlossaryExtractResponse)
-async def extract_glossary_from_text(body: GlossaryExtractRequest):
-    """Extract telecom glossary terms and definitions from free text."""
-    model = os.environ.get("OPENAI_RECOMMENDATION_MODEL", "gpt-4.1-mini")
+@router.post("/extract-glossary", response_model=list[TermRead])
+async def extract_glossary_from_text(
+    body: GlossaryExtractRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Find all known glossary terms that appear in the submitted text."""
+    text_lower = body.text.lower()
 
-    try:
-        terms = await extract_glossary(text=body.text)
-    except RecommendationServiceError as exc:
-        raise HTTPException(503, detail=str(exc)) from exc
+    result = await db.execute(select(TermModel).order_by(TermModel.term))
+    all_terms = result.scalars().all()
 
-    return GlossaryExtractResponse(terms=terms, model=model)
+    matched = []
+    for term in all_terms:
+        # Use word-boundary matching so "LTE" doesn't match inside "FILTER"
+        pattern = re.escape(term.term)
+        if re.search(rf"(?<!\w){pattern}(?!\w)", text_lower, re.IGNORECASE):
+            matched.append(term)
+
+    return matched

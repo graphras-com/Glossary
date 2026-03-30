@@ -1,13 +1,13 @@
 /**
- * Home page — term lookup, glossary list builder, and AI glossary extraction.
+ * Home page — term lookup, glossary list builder, and text-based extraction.
  *
  * Users search for terms, add them to a session-scoped glossary list,
  * choose a language (English or Danish), and copy the list as an HTML
  * table that pastes cleanly into MS Word.
  *
- * The "Generate from text" section lets users paste free text and have
- * the AI extract telecom terms with definitions, rendered in the same
- * copyable table format.
+ * The "Generate glossary from text" section lets users paste free text;
+ * the backend matches it against existing glossary terms and returns
+ * the matching entries, rendered in the same copyable table format.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -40,7 +40,7 @@ export default function Home() {
   const [extractText, setExtractText] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState("");
-  const [extractResult, setExtractResult] = useState(null); // { terms, model }
+  const [extractResult, setExtractResult] = useState(null); // list of TermRead
   const [extractCopied, setExtractCopied] = useState(false);
 
   /* Debounced search */
@@ -102,7 +102,11 @@ export default function Home() {
     setExtractResult(null);
     try {
       const data = await extractGlossary({ text: extractText.trim() });
-      setExtractResult(data);
+      if (data.length === 0) {
+        setExtractError("No matching glossary terms found in the text.");
+      } else {
+        setExtractResult(data);
+      }
     } catch (err) {
       setExtractError(err.message || "Failed to extract glossary.");
     } finally {
@@ -110,31 +114,42 @@ export default function Home() {
     }
   }
 
+  /** Build definition text for a term (same logic as the manual list). */
+  function defText(term) {
+    const defs = term.definitions || [];
+    return defs
+      .map((d) => d[language] || "")
+      .filter(Boolean)
+      .join("; ");
+  }
+
   const handleExtractCopy = useCallback(async () => {
-    if (!extractResult || extractResult.terms.length === 0) return;
-    const langLabel = language === "en" ? "Definition (English)" : "Definition (Danish)";
-    const rows = extractResult.terms
-      .map(
-        (t) =>
+    if (!extractResult || extractResult.length === 0) return;
+    const label = language === "en" ? "Definition (English)" : "Definition (Danish)";
+    const rows = extractResult
+      .map((term) => {
+        const text = defText(term);
+        return (
           `<tr>` +
-          `<td style="border:1px solid #ccc;padding:6px 10px;font-weight:bold;">${escapeHtml(t.term)}</td>` +
-          `<td style="border:1px solid #ccc;padding:6px 10px;">${escapeHtml(t[language] || "")}</td>` +
-          `</tr>`,
-      )
+          `<td style="border:1px solid #ccc;padding:6px 10px;font-weight:bold;">${escapeHtml(term.term)}</td>` +
+          `<td style="border:1px solid #ccc;padding:6px 10px;">${escapeHtml(text)}</td>` +
+          `</tr>`
+        );
+      })
       .join("");
 
     const html =
       `<table style="border-collapse:collapse;width:100%;font-family:Calibri,Arial,sans-serif;font-size:11pt;">` +
       `<thead><tr>` +
       `<th style="border:1px solid #ccc;padding:6px 10px;background:#f0f0f0;text-align:left;">Term</th>` +
-      `<th style="border:1px solid #ccc;padding:6px 10px;background:#f0f0f0;text-align:left;">${langLabel}</th>` +
+      `<th style="border:1px solid #ccc;padding:6px 10px;background:#f0f0f0;text-align:left;">${label}</th>` +
       `</tr></thead>` +
       `<tbody>${rows}</tbody>` +
       `</table>`;
 
     const plain = [
-      `Term\t${langLabel}`,
-      ...extractResult.terms.map((t) => `${t.term}\t${t[language] || ""}`),
+      `Term\t${label}`,
+      ...extractResult.map((term) => `${term.term}\t${defText(term)}`),
     ].join("\n");
 
     try {
@@ -149,6 +164,7 @@ export default function Home() {
     } catch {
       // clipboard write failed
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [extractResult, language]);
 
   function handleExtractClear() {
@@ -249,12 +265,7 @@ export default function Home() {
             </thead>
             <tbody>
               {items.map((term) => {
-                const defs = term.definitions || [];
-                const text = defs
-                  .map((d) => d[language] || "")
-                  .filter(Boolean)
-                  .join("; ");
-
+                const text = defText(term);
                 return (
                   <tr key={term.id}>
                     <td className="builder-cell-term">{term.term}</td>
@@ -293,8 +304,8 @@ export default function Home() {
         {extractOpen && (
           <div className="extract-body">
             <p className="extract-description">
-              Paste or type text below and the AI will identify telecom terms
-              and generate definitions in both English and Danish.
+              Paste or type text below to find matching glossary terms and
+              build a glossary list automatically.
             </p>
             <textarea
               className="input extract-textarea"
@@ -309,7 +320,7 @@ export default function Home() {
                 onClick={handleExtract}
                 disabled={extracting || !extractText.trim()}
               >
-                {extracting ? "Generating..." : "Generate glossary"}
+                {extracting ? "Searching..." : "Generate glossary"}
               </button>
               {(extractText || extractResult) && (
                 <button className="btn" onClick={handleExtractClear}>
@@ -322,7 +333,7 @@ export default function Home() {
               <p className="extract-error">{extractError}</p>
             )}
 
-            {extractResult && extractResult.terms.length > 0 && (
+            {extractResult && extractResult.length > 0 && (
               <>
                 <div className="builder-actions">
                   <button className="btn btn-primary" onClick={handleExtractCopy}>
@@ -337,12 +348,15 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody>
-                    {extractResult.terms.map((t, i) => (
-                      <tr key={i}>
-                        <td className="builder-cell-term">{t.term}</td>
-                        <td>{t[language] || <span className="muted">No {language === "en" ? "English" : "Danish"} definition</span>}</td>
-                      </tr>
-                    ))}
+                    {extractResult.map((term) => {
+                      const text = defText(term);
+                      return (
+                        <tr key={term.id}>
+                          <td className="builder-cell-term">{term.term}</td>
+                          <td>{text || <span className="muted">No {language === "en" ? "English" : "Danish"} definition</span>}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </>
