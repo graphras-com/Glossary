@@ -18,6 +18,7 @@ from resources.schemas import (  # noqa: F401
     DefinitionRecommendRequest,
     DefinitionRecommendResponse,
     DefinitionUpdate,
+    GlossaryExtractRequest,
     TermCreate,
     TermRead,
     TermUpdate,

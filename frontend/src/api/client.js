@@ -243,3 +243,11 @@ export function recommendDefinition(data) {
     body: JSON.stringify(data),
   });
 }
+
+// ── Domain-specific: AI Glossary Extraction (app-specific, not auto-generated) ──
+export function extractGlossary(data) {
+  return request("/terms/extract-glossary", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}

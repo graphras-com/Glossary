@@ -116,6 +116,6 @@ CUSTOM_ROUTERS: list = []
 
 def _load_custom_routers():
     """Load application-specific routers that aren't auto-generated."""
-    from resources.routers import recommend
+    from resources.routers import extract_glossary, recommend
 
-    return [recommend.router]
+    return [recommend.router, extract_glossary.router]
