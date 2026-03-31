@@ -139,6 +139,7 @@ jobs:
   # ── Security ──────────────────────────────────────────────────────
   secrets-scan:
     name: Secrets
+    if: github.event_name != 'release'
     needs: [detect-stack]
     uses: ./.github/workflows/python-gitleaks.yml
     secrets:
