@@ -5,7 +5,7 @@ steps:
     image: bitnami/kubectl:latest
     pull: true
     when:
-      - event: [tag]
+      - event: [manual]
     environment:
       KUBECONFIG_B64:
         from_secret: KUBECONFIG_B64
@@ -52,7 +52,7 @@ steps:
         NAMESPACE="$${ORG_NS}-prod"
         HOST="$${APP_NAME}.$${ORG_DNS}"
         TLS_SECRET="$(printf '%s' "$HOST" | tr '.' '-')-tls"
-        IMAGE_TAG="$${CI_COMMIT_TAG:-latest}"
+        IMAGE_TAG="$${CI_PIPELINE_VARIABLE_IMAGE_TAG:-$${CI_COMMIT_TAG:-latest}}"
 
         DB_NAME="$$(printf '%s' "$APP_NAME" | tr '-' '_')_prod"
 
