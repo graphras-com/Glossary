@@ -104,18 +104,18 @@ steps:
           "    name: pg" \
           | render_apply
 
-        # --- Wait for CNPG database to be ready ---
-        echo "Waiting for database $${DB_NAME} to be ready …"
+        # --- Wait for CNPG database to be applied ---
+        echo "Waiting for database $${DB_NAME} to be applied …"
         DB_READY=false
         for _i in $(seq 1 30); do
-          STATUS="$(kubectl -n default get database/"$${APP_NAME}-staging-db" \
-                      -o jsonpath='{.status.ready}' 2>/dev/null || true)"
-          if [ "$STATUS" = "true" ]; then
-            echo "Database $${DB_NAME} is ready."
+          APPLIED="$(kubectl -n default get database/"$${APP_NAME}-staging-db" \
+                       -o jsonpath='{.status.applied}' 2>/dev/null || true)"
+          if [ "$APPLIED" = "true" ]; then
+            echo "Database $${DB_NAME} is applied."
             DB_READY=true
             break
           fi
-          echo "  attempt $${_i}/30 — ready=$${STATUS:-<unset>}"
+          echo "  attempt $${_i}/30 — applied=$${APPLIED:-<unset>}"
           sleep 5
         done
         if [ "$DB_READY" != "true" ]; then
