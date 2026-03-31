@@ -50,6 +50,10 @@ CORS_ORIGINS: list[str] = (
 ALEMBIC_INI = Path(__file__).resolve().parent.parent / "alembic.ini"
 
 
+_MIGRATION_MAX_RETRIES = int(os.getenv("MIGRATION_MAX_RETRIES", "12"))
+_MIGRATION_RETRY_INTERVAL = int(os.getenv("MIGRATION_RETRY_INTERVAL", "5"))
+
+
 def _run_migrations_sync() -> None:
     """Run Alembic migrations in a fresh event loop (called from a thread)."""
     cfg = Config(str(ALEMBIC_INI))
@@ -57,14 +61,34 @@ def _run_migrations_sync() -> None:
 
 
 async def _run_migrations() -> None:
-    """Run Alembic migrations in a separate thread.
+    """Run Alembic migrations in a separate thread with retries.
 
     Alembic's async env.py calls asyncio.run() which requires its own event
     loop.  Running in a thread avoids the "cannot call asyncio.run() from a
     running event loop" error when called from uvicorn's lifespan.
+
+    Retries are essential for Kubernetes deployments where the database
+    (e.g. CloudNativePG) may not be ready when the pod starts.
     """
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, _run_migrations_sync)
+    for attempt in range(1, _MIGRATION_MAX_RETRIES + 1):
+        try:
+            await loop.run_in_executor(None, _run_migrations_sync)
+            return
+        except Exception:
+            if attempt == _MIGRATION_MAX_RETRIES:
+                logger.error(
+                    "Database migration failed after %d attempts — giving up",
+                    _MIGRATION_MAX_RETRIES,
+                )
+                raise
+            logger.warning(
+                "Database migration attempt %d/%d failed, retrying in %ds …",
+                attempt,
+                _MIGRATION_MAX_RETRIES,
+                _MIGRATION_RETRY_INTERVAL,
+            )
+            await asyncio.sleep(_MIGRATION_RETRY_INTERVAL)
 
 
 @asynccontextmanager

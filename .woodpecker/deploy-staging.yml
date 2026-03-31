@@ -104,6 +104,21 @@ steps:
           "    name: pg" \
           | render_apply
 
+        # --- Wait for CNPG database to be ready ---
+        echo "Waiting for database $${DB_NAME} to be ready …"
+        for _i in $(seq 1 30); do
+          if kubectl -n default wait database/"$${APP_NAME}-staging-db" \
+               --for=condition=Ready --timeout=5s 2>/dev/null; then
+            echo "Database $${DB_NAME} is ready."
+            break
+          fi
+          if [ "$_i" -eq 30 ]; then
+            echo "ERROR: timed out waiting for database $${DB_NAME}"
+            exit 1
+          fi
+          sleep 5
+        done
+
         # --- Build DATABASE_URL from the CNPG cluster's app secret ---
         PGUSER="$(kubectl -n default get secret pg-app -o jsonpath='{.data.username}' | base64 -d)"
         PGPASS="$(kubectl -n default get secret pg-app -o jsonpath='{.data.password}' | base64 -d)"
