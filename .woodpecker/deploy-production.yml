@@ -96,18 +96,24 @@ steps:
 
         # --- Wait for CNPG database to be ready ---
         echo "Waiting for database $${DB_NAME} to be ready …"
+        DB_READY=false
         for _i in $(seq 1 30); do
-          if kubectl -n default wait database/"$${APP_NAME}-prod-db" \
-               --for=condition=Ready --timeout=5s 2>/dev/null; then
+          STATUS="$(kubectl -n default get database/"$${APP_NAME}-prod-db" \
+                      -o jsonpath='{.status.ready}' 2>/dev/null || true)"
+          if [ "$STATUS" = "true" ]; then
             echo "Database $${DB_NAME} is ready."
+            DB_READY=true
             break
           fi
-          if [ "$_i" -eq 30 ]; then
-            echo "ERROR: timed out waiting for database $${DB_NAME}"
-            exit 1
-          fi
+          echo "  attempt $${_i}/30 — ready=$${STATUS:-<unset>}"
           sleep 5
         done
+        if [ "$DB_READY" != "true" ]; then
+          echo "ERROR: timed out waiting for database $${DB_NAME}"
+          echo "--- Database resource status ---"
+          kubectl -n default get database/"$${APP_NAME}-prod-db" -o yaml || true
+          exit 1
+        fi
 
         # --- Build DATABASE_URL from the CNPG cluster's app secret ---
         PGUSER="$(kubectl -n default get secret pg-app -o jsonpath='{.data.username}' | base64 -d)"
